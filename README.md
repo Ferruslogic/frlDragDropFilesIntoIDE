@@ -20,9 +20,13 @@ You can also import SVG files to LiveCode by dragging and dropping it. It will o
  
 ### How do I start using this extension.
 When started, LiveCode searches a particular folder for your custom extensions. Their locations vary by operating system:
+
 Windows: My Documents / My LiveCode / Extensions
+
 OS X: ~ / Documents / My LiveCode / Extensions
+
 Linux: ~ / my_livecode / Extensions /
+
 For this extension to be integrated with the LiveCode you can do it in two ways. The easy and the easiest.
  
 ### The easy way
