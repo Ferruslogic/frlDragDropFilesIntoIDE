@@ -3,7 +3,6 @@
  
 ### Author: 
 Developed by [Ferrus Logic.](http://ferruslogic.com/)
-![Ferrus Logic Logo](https://ferruslogic.com/wp-content/uploads/2020/05/68747470733a2f2f6665727275736c6f6769632e636f6d2f77702d636f6e74656e742f75706c6f6164732f323032302f30342f4665727275734c6f676963342d312e737667.svg)
 
 ### License: 
 This code is the property of FerrusLogic and is distributed under the DEFAULT license.
