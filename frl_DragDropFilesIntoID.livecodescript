@@ -1,4 +1,4 @@
-﻿script "com.ferruslogic.library.dragDropFilesIntoID"
+script "com.ferruslogic.library.dragDropFilesIntoID.1.0.1"
 ## This small library is to aid in the application creation process by 
 ## allowing you to drag files to our development ID. So it only runs
 ## in development mode for the time being.
