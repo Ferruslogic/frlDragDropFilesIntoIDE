@@ -1,4 +1,4 @@
-# frl_DragDropFileHelper
+# frl_DragDropFilesIntoID
 ### Is a helper for LiveCode developers
 ## Author: FerrusLogic
 ## License: This code is the property of FerrusLogic and is distributed under the DEFAULT license.
