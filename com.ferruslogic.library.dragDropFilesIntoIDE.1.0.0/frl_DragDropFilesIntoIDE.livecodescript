@@ -1,6 +1,6 @@
-script "com.ferruslogic.library.dragDropFilesIntoID.1.0.1"
+﻿script "com.ferruslogic.library.dragDropFilesIntoIDE.1.0.1"
 ## This small library is to aid in the application creation process by 
-## allowing you to drag files to our development ID. So it only runs
+## allowing you to drag files to our development IDE. So it only runs
 ## in development mode for the time being.
 ##
 ## By FerrusLogic
@@ -11,6 +11,7 @@ local sFiles
 local sTopStack
 local sLongIdBackGraphic
 local sTarget, sTypeTarget
+local sLastControl
 
 on extensionInitialize
    if the target is not me then
@@ -30,15 +31,6 @@ on extensionFinalize
    
    remove the script of me from front
 end extensionFinalize
-
-
---on dragStart
-
---   set the allowableDragActions to "copy"
---   set the dragAction to "copy"
-
---   pass dragStart
---end dragStart
 
 on dragMove
    
@@ -60,38 +52,47 @@ on dragMove
       set the layer  of sLongIdBackGraphic to 1
       
       put "" into sTarget
-      put "" into sTypeTarget
-      set the acceptDrop to true
-      
+      put "" into sTypeTarget     
    end if
    
-   set the acceptDrop to sFiles is not empty
+   
+   set the acceptDrop to _filesTypeDragDrog(sFiles) 
    
    pass dragMove
 end dragMove
 
+
+
 on dragDrop
-   
    _deleteBackgroundGraphic
    
    if sFiles is not empty then
       lock screen
-      lock messages
       set the cursor to watch
       lock cursor
+      lock messages
       
       repeat for each line tFile in sFiles
          _importFile tFile
       end repeat
       
+      unlock messages
+      
       choose pointer tool
       
-      unlock screen; unlock cursor; unlock messages
+      if there is a sLastControl then
+         select sLastControl
+      end if
+      
+      --send "newTool"
+      unlock screen; unlock cursor
       exit dragDrop
    end if
    
    pass dragDrop
 end dragDrop
+
+
 
 private command _importFile pFilePath
    local tExtencion
@@ -105,40 +106,45 @@ private command _importFile pFilePath
    if there is a file pFilePath then
       set the itemdel to comma
       -- try
-         switch 
+      switch 
+         
+         # LiveCode, Revolution and MetaCard binary stack files
+         case tExtencion is among the items of "livecode,rev,mc"
+            unlock messages
+            open stack pFilePath
+            lock messages
+            break
             
-            # LiveCode, Revolution and MetaCard binary stack files
-            case tExtencion is among the items of "livecode,rev,mc"
-               open stack pFilePath
-               break
-               
-               # Script-only stack
-            case tExtencion is "livecodescript"
-               open stack pFilePath
-               edit the script of stack pFilePath
-               break
-               
-               # Images file
-            case tExtencion is among the items of "png,jpeg,jpg,gif,bmp,pbm,pgm,ppm,xbm,xpm,xwd,pict,webp,jfif,tif,tiff,dib,vga,pict,pict2,pic"
-               _importImage pFilePath, "file"
-               break
-               
-               # Audio and Videos file
-            case tExtencion is among the items of "mp3,mp4,mpg,mov,avi,m4a,midi,midi,snd,aac,wma,ogg,mpeg,m2v,mpeg2,qt,ram,rm"
-               _importPlayer pFilePath
-               break
-               
-               # SVG
-            case tExtencion is "svg"
-               _importPathSVG pFilePath
-               break
-         end switch
+            # Script-only stack
+         case tExtencion is "livecodescript"
+            open stack pFilePath
+            edit the script of stack pFilePath
+            break
+            
+            # Images file
+         case tExtencion is among the items of "png,jpeg,jpg,gif,bmp,pbm,pgm,ppm,xbm,xpm,xwd,pict,webp,jfif,tif,tiff,dib,vga,pict,pict2,pic"
+            _importImage pFilePath, "file"
+            break
+            
+            # Audio and Videos file
+         case tExtencion is among the items of "mp3,mp4,mpg,mov,avi,m4a,midi,midi,snd,aac,wma,ogg,mpeg,m2v,mpeg2,qt,ram,rm"
+            _importPlayer pFilePath
+            break
+            
+            # SVG
+         case tExtencion is "svg"
+            _importPathSVG pFilePath
+            break
+      end switch
       -- end try
    end if
 end _importFile
 
-private  command _importImage pPathOrData, pType
-   local tNameFile
+--private  
+command _importImage pPathOrData, pType
+   local tNameFile, tImageData
+   local tNewImage, tMouseLoc
+   
    set the itemdel to "/"
    
    _setDefaultStack
@@ -155,9 +161,10 @@ private  command _importImage pPathOrData, pType
                set the filename of sTarget to _convertPathToRelativePath(pPathOrData)
             end if
             
-         else
-            local tNewImage, tMouseLoc
+            put sTarget into sLastControl
+            exit _importImage
             
+         else            
             put the mouseLoc into tMouseLoc
             set the text of templateImage to URL ("binfile:" & pPathOrData)
             
@@ -165,25 +172,57 @@ private  command _importImage pPathOrData, pType
             create image tNameFile in this cd
             put it into tNewImage
             
+            
             if the text of tNewImage is empty then
                set the filename of tNewImage to _convertPathToRelativePath(pPathOrData)
             end if
             
-            if within(stack sTopStack, tMouseLoc) then
-               set the loc of tNewImage to tMouseLoc
-            else
-               set the loc of tNewImage to (the loc of cd 1 of stack sTopStack)
+            if there is tNewImage then
+               if within(stack sTopStack, tMouseLoc) then
+                  set the loc of tNewImage to tMouseLoc
+               else
+                  set the loc of tNewImage to (the loc of cd 1 of stack sTopStack)
+               end if
+               
+               put tNewImage into sLastControl
             end if
-            
+            reset templateImage
          end if
          
       else
-         set the text of templateImage to pPathOrData
-         create image in this cd
+         local tOldText, tNewText
+         put drawingSvgCompileFile(pPathOrData) into tNewText
          
+         if there is a sTarget and sTypeTarget is "image" then
+            put the text of sTarget  into tOldText
+            
+            set the text of sTarget to tNewText
+            
+            if the text of sTarget is empty then
+               set the text of sTarget to tOldText
+            end if
+            
+         else
+            put the mouseLoc into tMouseLoc
+            set the text of templateImage to tNewText
+            
+            put item - 1 of pPathOrData into tNameFile
+            create image tNameFile in this cd
+            put it into tNewImage
+            
+            
+            if there is tNewImage then
+               if within(stack sTopStack, tMouseLoc) then
+                  set the loc of tNewImage to tMouseLoc
+               else
+                  set the loc of tNewImage to (the loc of cd 1 of stack sTopStack)
+               end if
+               
+               put tNewImage into sLastControl
+            end if
+            reset templateImage
+         end if
       end if
-      
-      reset templateImage
    end if
    
 end _importImage
@@ -199,7 +238,7 @@ private command _importPlayer pPathOrData
       if there is a sTarget and sTypeTarget is "player" then
          
          set the filename of sTarget to _convertPathToRelativePath(pPathOrData)
-         
+         put sTarget into sLastControl
       else
          local tNewPlayer, tMouseLoc
          
@@ -216,7 +255,7 @@ private command _importPlayer pPathOrData
          else
             set the loc of tNewPlayer to (the loc of cd 1 of stack sTopStack)
          end if
-         
+         put tNewPlayer into sLastControl
       end if
       
       reset templatePlayer
@@ -232,35 +271,40 @@ private command _importPathSVG pFilePath
    
    put _getPathSVG(pFilePath) into tPathSVG
    
-   if there is stack sTopStack and tPathSVG is not empty then
-      local tKind
-      try
-         put the kind of sTarget into tKind
-      end try
-      
-      if there is a sTarget and sTypeTarget is "widget" and tKind is "com.livecode.widget.svgpath" then
+   if there is stack sTopStack then
+      if  tPathSVG is not empty then
+         local tKind
+         try
+            put the kind of sTarget into tKind
+         end try
          
-         set the iconPath of sTarget to tPathSVG
-         
-      else
-         local tMouseLoc
-         put the mouseLoc into tMouseLoc
-         
-         create widget as "com.livecode.widget.svgpath" in this cd
-         put it into tNewWidget
-         
-         set the iconPath of tNewWidget to tPathSVG
-         set the width of tNewWidget to 180
-         set the height of tNewWidget to 180
-         
-         if within(stack sTopStack, tMouseLoc) then
-            set the loc of tNewWidget to tMouseLoc
+         if there is a sTarget and sTypeTarget is "widget" and tKind is "com.livecode.widget.svgpath" then
+            
+            set the iconPath of sTarget to tPathSVG
+            
+            put sTarget into sLastControl
          else
-            set the loc of tNewWidget to (the loc of cd 1 of stack sTopStack)
+            local tMouseLoc
+            put the mouseLoc into tMouseLoc
+            
+            create widget as "com.livecode.widget.svgpath" in this cd
+            put it into tNewWidget
+            
+            set the iconPath of tNewWidget to tPathSVG
+            set the width of tNewWidget to 180
+            set the height of tNewWidget to 180
+            
+            if within(stack sTopStack, tMouseLoc) then
+               set the loc of tNewWidget to tMouseLoc
+            else
+               set the loc of tNewWidget to (the loc of cd 1 of stack sTopStack)
+            end if
+            
+            put tNewWidget into sLastControl
          end if
-         
+      else
+         _importImage pFilePath, "SVG_Data"
       end if
-      
    end if
 end _importPathSVG
 
@@ -353,4 +397,21 @@ private function _getPathSVG pFilePath
    
    return tOutPathSVG
 end _getPathSVG
+
+
+private function _filesTypeDragDrog pFiles
+   local tResult
+   put false into tResult
+   
+   set the itemdel to "."
+   
+   repeat for each line tFile in pFiles
+      if item - 1 of tFile is among the items of "livecode.rev.mc.livecodescript.png.jpeg.jpg.gif.bmp.pbm.pgm.ppm.xbm.xpm.xwd.pict.webp.jfif.tif.tiff.dib.vga.pict.pict2.pic.mp3.mp4.mpg.mov.avi.m4a.midi.midi.snd.aac.wma.ogg.mpeg.m2v.mpeg2.qt.ram.rm.svg" then
+         put true into tResult
+         exit repeat
+      end if
+   end repeat
+   
+   return tResult
+end _filesTypeDragDrog
 
