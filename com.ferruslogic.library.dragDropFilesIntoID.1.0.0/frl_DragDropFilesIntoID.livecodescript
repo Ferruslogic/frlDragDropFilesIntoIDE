@@ -41,7 +41,7 @@ end extensionFinalize
 --end dragStart
 
 on dragMove
-     
+   
    _setDefaultStack
    
    put the dragData["files"] into sFiles
@@ -61,9 +61,11 @@ on dragMove
       
       put "" into sTarget
       put "" into sTypeTarget
+      set the acceptDrop to true
       
    end if
-   set the acceptDrop to true
+   
+   set the acceptDrop to sFiles is not empty
    
    pass dragMove
 end dragMove
@@ -73,7 +75,8 @@ on dragDrop
    _deleteBackgroundGraphic
    
    if sFiles is not empty then
-      lock screen;
+      lock screen
+      lock messages
       set the cursor to watch
       lock cursor
       
@@ -83,7 +86,7 @@ on dragDrop
       
       choose pointer tool
       
-      unlock screen; unlock cursor
+      unlock screen; unlock cursor; unlock messages
       exit dragDrop
    end if
    
@@ -101,7 +104,7 @@ private command _importFile pFilePath
    
    if there is a file pFilePath then
       set the itemdel to comma
-      try
+      -- try
          switch 
             
             # LiveCode, Revolution and MetaCard binary stack files
@@ -130,7 +133,7 @@ private command _importFile pFilePath
                _importPathSVG pFilePath
                break
          end switch
-      end try
+      -- end try
    end if
 end _importFile
 
@@ -161,6 +164,10 @@ private  command _importImage pPathOrData, pType
             put item - 1 of pPathOrData into tNameFile
             create image tNameFile in this cd
             put it into tNewImage
+            
+            if the text of tNewImage is empty then
+               set the filename of tNewImage to _convertPathToRelativePath(pPathOrData)
+            end if
             
             if within(stack sTopStack, tMouseLoc) then
                set the loc of tNewImage to tMouseLoc
@@ -346,3 +353,4 @@ private function _getPathSVG pFilePath
    
    return tOutPathSVG
 end _getPathSVG
+
