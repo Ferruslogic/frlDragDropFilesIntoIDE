@@ -1,4 +1,4 @@
-# frl_DragDropFilesIntoIDE
+# frlDragDropFilesIntoIDE
  Is a helper for LiveCode developers
  
 ### Author: 
