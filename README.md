@@ -5,7 +5,8 @@
 [Ferrus Logic.](http://ferruslogic.com/)
 
 ### License: 
-This code is the property of FerrusLogic and is distributed under the DEFAULT license.
+This code was developed by FerrusLogic and is distributed under the MIT license.
+
 ### Version:
 1.0.0b
  
