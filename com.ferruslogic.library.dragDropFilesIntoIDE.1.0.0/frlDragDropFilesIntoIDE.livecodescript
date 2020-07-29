@@ -135,6 +135,11 @@ private command _importFile pFilePath
          case tExtencion is "svg"
             _importPathSVG pFilePath
             break
+			
+			---TODO
+            # text --Field
+            # html --widget Browser???
+
       end switch
       -- end try
    end if
