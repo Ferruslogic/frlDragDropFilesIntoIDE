@@ -6,12 +6,26 @@
 ## By FerrusLogic
 ## version 1.0.0b
 ## Date: 2020-07-09 15:20
+## 
+## Update: 2020-08-06 09:39
 
+# list of files being dragged.
 local sFiles
+
+# the stack that is on top.
 local sTopStack
+
+# graph that is dynamically created in the background for the DragDrop event to be sent.
 local sLongIdBackGraphic
+
+# The object that is the object and its type.
 local sTarget, sTypeTarget
+
+# The last control that was imported. It is to select it at the end of everything.
 local sLastControl
+
+# Whether to import into the target or create a new object.
+local sReplace
 
 on extensionInitialize
    if the target is not me then
@@ -46,13 +60,16 @@ on dragMove
       
       set the rect of sLongIdBackGraphic to the rect of this cd of stack sTopStack 
       set the opaque of sLongIdBackGraphic to true
-      set the blendlevel of sLongIdBackGraphic to 100
-      set the backcolor of sLongIdBackGraphic to 0,0,0
+      set the blendlevel of sLongIdBackGraphic to 50
+      set the backcolor of sLongIdBackGraphic to "0,0,0"
       set the visible of sLongIdBackGraphic to true
       set the layer  of sLongIdBackGraphic to 1
+      set the foregroundColor of sLongIdBackGraphic to "249,103,6"
       
       put "" into sTarget
-      put "" into sTypeTarget     
+      put "" into sTypeTarget
+      put "" into sReplace
+  
    end if
    
    
@@ -62,9 +79,10 @@ on dragMove
 end dragMove
 
 
-
 on dragDrop
    _deleteBackgroundGraphic
+   
+   put the optionKey is down and the shiftKey is down and the number of lines of sFiles is 1  into sReplace
    
    if sFiles is not empty then
       lock screen
@@ -84,7 +102,6 @@ on dragDrop
          select sLastControl
       end if
       
-      --send "newTool"
       unlock screen; unlock cursor
       exit dragDrop
    end if
@@ -93,7 +110,7 @@ on dragDrop
 end dragDrop
 
 
-
+constant kTextFiles = "txt,lng,locale,log,mnu,nfo,inf,ini,inc,bar,cfg,sav,conf,manifest,lst,ion,rc,properties,mf,list,wbt,lic,css,hs,iss,js,nsi,nsh,java,php,php3,php4,php5,tct,xml,xsml,xsl,kml,adr,sfx,,sh,bsh,lua,pl,pm,py,as,las,mx,vb,f,for,f90,f95,f2k,tex,mak,tpl,asm,plx,lsp,lisp,scm,smd,ss,kix,au3,ml,mli,sml,thy,ada,ads,adb,v,lhs,cmake,twig,yml"
 private command _importFile pFilePath
    local tExtencion
    set the itemdel to "."
@@ -135,18 +152,20 @@ private command _importFile pFilePath
          case tExtencion is "svg"
             _importPathSVG pFilePath
             break
-			
-			---TODO
-            # text --Field
+            		
+            # Text Plan
+         case tExtencion is among the items of kTextFiles
+            _importTextPlan pFilePath
+            break
+            
             # html --widget Browser???
-
+            
       end switch
       -- end try
    end if
 end _importFile
 
---private  
-command _importImage pPathOrData, pType
+private  command _importImage pPathOrData, pType
    local tNameFile, tImageData
    local tNewImage, tMouseLoc
    
@@ -157,8 +176,7 @@ command _importImage pPathOrData, pType
    if there is stack sTopStack then 
       
       if pType is "file" then
-         
-         if there is a sTarget and sTypeTarget is "image" then
+         if there is a sTarget and sTypeTarget is "image" and sReplace is true  then
             
             if the filename of sTarget is empty then
                set the text of sTarget to URL ("binfile:" & pPathOrData)
@@ -169,30 +187,30 @@ command _importImage pPathOrData, pType
             put sTarget into sLastControl
             exit _importImage
             
-         else            
-            put the mouseLoc into tMouseLoc
-            set the text of templateImage to URL ("binfile:" & pPathOrData)
-            
-            put item - 1 of pPathOrData into tNameFile
-            create image tNameFile in this cd
-            put it into tNewImage
-            
-            
-            if the text of tNewImage is empty then
-               set the filename of tNewImage to _convertPathToRelativePath(pPathOrData)
-            end if
-            
-            if there is tNewImage then
-               if within(stack sTopStack, tMouseLoc) then
-                  set the loc of tNewImage to tMouseLoc
-               else
-                  set the loc of tNewImage to (the loc of cd 1 of stack sTopStack)
-               end if
-               
-               put tNewImage into sLastControl
-            end if
-            reset templateImage
          end if
+         
+         put the mouseLoc into tMouseLoc
+         set the text of templateImage to URL ("binfile:" & pPathOrData)
+         
+         put item - 1 of pPathOrData into tNameFile
+         create image tNameFile in this cd
+         put it into tNewImage
+         
+         
+         if the text of tNewImage is empty then
+            set the filename of tNewImage to _convertPathToRelativePath(pPathOrData)
+         end if
+         
+         if there is tNewImage then
+            if within(stack sTopStack, tMouseLoc) then
+               set the loc of tNewImage to tMouseLoc
+            else
+               set the loc of tNewImage to (the loc of cd 1 of stack sTopStack)
+            end if
+            
+            put tNewImage into sLastControl
+         end if
+         reset templateImage
          
       else
          local tOldText, tNewText
@@ -240,7 +258,7 @@ private command _importPlayer pPathOrData
    
    if there is stack sTopStack then
       
-      if there is a sTarget and sTypeTarget is "player" then
+      if there is a sTarget and sTypeTarget is "player" and sReplace is true then
          
          set the filename of sTarget to _convertPathToRelativePath(pPathOrData)
          put sTarget into sLastControl
@@ -283,7 +301,7 @@ private command _importPathSVG pFilePath
             put the kind of sTarget into tKind
          end try
          
-         if there is a sTarget and sTypeTarget is "widget" and tKind is "com.livecode.widget.svgpath" then
+         if there is a sTarget and sTypeTarget is "widget" and tKind is "com.livecode.widget.svgpath" and sReplace is true then
             
             set the iconPath of sTarget to tPathSVG
             
@@ -312,6 +330,24 @@ private command _importPathSVG pFilePath
       end if
    end if
 end _importPathSVG
+
+command _importTextPlan pFilePath
+   local tText
+   
+   _setDefaultStack
+   
+   if there is stack sTopStack then
+      put URL("file:" & pFilePath) into tText
+      
+      if there is a sTarget and sTypeTarget is "field" and sReplace is true then
+      set the text of sTarget to tText
+   else
+      set the text of templateField to tText
+      create field in stack sTopStack
+      reset templateField
+   end if 
+end if
+end _importTextPlan
 
 private command _setDefaultStack
    
