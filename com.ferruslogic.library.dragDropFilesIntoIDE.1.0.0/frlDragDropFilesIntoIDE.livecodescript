@@ -1,13 +1,33 @@
 ﻿script "com.ferruslogic.library.dragDropFilesIntoIDE.1.0.1"
-## This small library is to aid in the application creation process by 
-## allowing you to drag files to our development IDE. So it only runs
-## in development mode for the time being.
-##
-## By FerrusLogic
-## version 1.0.0b
-## Date: 2020-07-09 15:20
-## 
-## Update: 2020-08-06 09:39
+/* 
+Copyright (c) 2020 FerrusLogic.
+
+The MIT License (MIT)
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Summary
+This small library is to aid in the application creation process by 
+allowing you to drag files into the development IDE. So it only runs
+in development mode for the time being.
+
+version 1.0.0b
+Date: 2020-07-09 15:20
+Update: 2020-08-06 09:39
+*/
 
 # list of files being dragged.
 local sFiles
@@ -26,6 +46,12 @@ local sLastControl
 
 # Whether to import into the target or create a new object.
 local sReplace
+
+constant kBynaryStack = "livecode,rev,mc"
+constant kScriptOnlyStack = "livecodescript"
+constant kAudio = "mp3,mp4,mpg,mov,avi,m4a,midi,midi,snd,aac,wma,ogg,mpeg,m2v,mpeg2,qt,ram,rm"
+constant kImage = "png,jpeg,jpg,gif,bmp,pbm,pgm,ppm,xbm,xpm,xwd,pict,webp,jfif,tif,tiff,dib,vga,pict,pict2,pic"
+constant kTextPlan = "txt,lng,locale,log,mnu,nfo,inf,ini,inc,bar,cfg,sav,conf,manifest,lst,ion,rc,properties,mf,list,wbt,lic,css,hs,iss,js,nsi,nsh,java,php,php3,php4,php5,tct,xml,xsml,xsl,kml,adr,sfx,,sh,bsh,lua,pl,pm,py,as,las,mx,vb,f,for,f90,f95,f2k,tex,mak,tpl,asm,plx,lsp,lisp,scm,smd,ss,kix,au3,ml,mli,sml,thy,ada,ads,adb,v,lhs,cmake,twig,yml"
 
 on extensionInitialize
    if the target is not me then
@@ -49,7 +75,6 @@ end extensionFinalize
 on dragMove
    
    _setDefaultStack
-   
    put the dragData["files"] into sFiles
    
    if the mouse is down and sFiles is not empty and there is not graphic "frlDragDropBack" of this cd of stack sTopStack then
@@ -66,9 +91,9 @@ on dragMove
       set the layer  of sLongIdBackGraphic to 1
       set the foregroundColor of sLongIdBackGraphic to "249,103,6"
       
-      put "" into sTarget
-      put "" into sTypeTarget
-      put "" into sReplace
+      put empty into sTarget
+      put empty into sTypeTarget
+      put empty into sReplace
   
    end if
    
@@ -109,8 +134,6 @@ on dragDrop
    pass dragDrop
 end dragDrop
 
-
-constant kTextFiles = "txt,lng,locale,log,mnu,nfo,inf,ini,inc,bar,cfg,sav,conf,manifest,lst,ion,rc,properties,mf,list,wbt,lic,css,hs,iss,js,nsi,nsh,java,php,php3,php4,php5,tct,xml,xsml,xsl,kml,adr,sfx,,sh,bsh,lua,pl,pm,py,as,las,mx,vb,f,for,f90,f95,f2k,tex,mak,tpl,asm,plx,lsp,lisp,scm,smd,ss,kix,au3,ml,mli,sml,thy,ada,ads,adb,v,lhs,cmake,twig,yml"
 private command _importFile pFilePath
    local tExtencion
    set the itemdel to "."
@@ -122,29 +145,29 @@ private command _importFile pFilePath
    
    if there is a file pFilePath then
       set the itemdel to comma
-      -- try
+   
       switch 
          
          # LiveCode, Revolution and MetaCard binary stack files
-         case tExtencion is among the items of "livecode,rev,mc"
+         case tExtencion is among the items of kBynaryStack
             unlock messages
             open stack pFilePath
             lock messages
             break
             
             # Script-only stack
-         case tExtencion is "livecodescript"
+         case tExtencion is kScriptOnlyStack
             open stack pFilePath
             edit the script of stack pFilePath
             break
             
             # Images file
-         case tExtencion is among the items of "png,jpeg,jpg,gif,bmp,pbm,pgm,ppm,xbm,xpm,xwd,pict,webp,jfif,tif,tiff,dib,vga,pict,pict2,pic"
+         case tExtencion is among the items of kImage
             _importImage pFilePath, "file"
             break
             
             # Audio and Videos file
-         case tExtencion is among the items of "mp3,mp4,mpg,mov,avi,m4a,midi,midi,snd,aac,wma,ogg,mpeg,m2v,mpeg2,qt,ram,rm"
+         case tExtencion is among the items of kAudio
             _importPlayer pFilePath
             break
             
@@ -154,14 +177,12 @@ private command _importFile pFilePath
             break
             		
             # Text Plan
-         case tExtencion is among the items of kTextFiles
+         case tExtencion is among the items of kTextPlan
             _importTextPlan pFilePath
             break
             
-            # html --widget Browser???
-            
       end switch
-      -- end try
+   
    end if
 end _importFile
 
