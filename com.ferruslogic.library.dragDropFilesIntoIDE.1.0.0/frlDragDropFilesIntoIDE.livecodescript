@@ -60,7 +60,7 @@ on extensionInitialize
    end if
    
    if the environment contains "development" then
-      insert the script of me into front
+      insert the script of me into back
       set the _ideoverride of me to true
    end if
 end extensionInitialize
@@ -70,7 +70,7 @@ on extensionFinalize
       pass extensionFinalize
    end if
    
-   remove the script of me from front
+   remove the script of me from back
 end extensionFinalize
 
 on dragMove
