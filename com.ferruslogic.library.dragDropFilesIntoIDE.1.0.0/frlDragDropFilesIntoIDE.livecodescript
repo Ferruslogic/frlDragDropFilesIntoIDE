@@ -1,4 +1,5 @@
-﻿/*
+﻿script "frlDragDropFilesIntoIDE"
+/*
 Copyright (c) 2020 FerrusLogic.
 
 The MIT License (MIT)
