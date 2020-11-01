@@ -1,5 +1,4 @@
-﻿script "com.ferruslogic.library.dragDropFilesIntoIDE.1.0.1"
-/*
+﻿/*
 Copyright (c) 2020 FerrusLogic.
 
 The MIT License (MIT)
@@ -75,16 +74,23 @@ end extensionFinalize
 
 
 on dragEnter
-   call "dragMove" of me
+   set the acceptDrop to _filesTypeDragDrog(sFiles)
+   _acceptDrop
    pass dragEnter
 end dragEnter
 
 
 on dragMove
+   _acceptDrop
+   pass dragMove
+end dragMove
+
+
+private command _acceptDrop
    _setDefaultStack
    put the dragData["files"] into sFiles
 
-   if sFiles is empty then pass dragMove
+   if sFiles is empty then exit _acceptDrop
 
    if the mouse is down and sFiles is not empty and there is not graphic "frlDragDropBack" of this cd of stack sTopStack then
 
@@ -107,10 +113,7 @@ on dragMove
    end if
 
    set the acceptDrop to _filesTypeDragDrog(sFiles)
-
-   pass dragMove
-end dragMove
-
+end _acceptDrop
 
 
 on dragDrop
@@ -221,7 +224,7 @@ private  command _importImage pPathOrData, pType
 
    _setDefaultStack
 
-   if there is stack sTopStack then
+   if there is a stack sTopStack then
 
       if pType is "file" then
          if there is a sTarget and sTypeTarget is "image" and sReplace is true  then
@@ -304,7 +307,7 @@ private command _importPlayer pPathOrData
 
    _setDefaultStack
 
-   if there is stack sTopStack then
+   if there is a stack sTopStack then
 
       if there is a sTarget and sTypeTarget is "player" and sReplace is true then
 
@@ -343,7 +346,7 @@ private command _importPathSVG pFilePath
 
    put _getPathSVG(pFilePath) into tPathSVG
 
-   if there is stack sTopStack then
+   if there is a stack sTopStack then
       if  tPathSVG is not empty then
 
          local tKind
@@ -386,7 +389,7 @@ command _importTextPlan pFilePath
 
    _setDefaultStack
 
-   if there is stack sTopStack then
+   if there is a stack sTopStack then
       put URL("file:" & pFilePath) into tText
 
       if there is a sTarget and sTypeTarget is "field" and sReplace is true then
@@ -415,7 +418,7 @@ private function _target
 
    put the target into tTarget
 
-   if there is stack sTopStack then
+   if there is a stack sTopStack then
 
       if there is  tTarget then
          put the long id of tTarget into tTarget
@@ -476,7 +479,7 @@ private function _getPathSVG pFilePath
 
    put empty into tOutPathSVG
 
-   if there is stack sTopStack then
+   if there is a stack sTopStack then
       put URL("file:" & pFilePath) into tInPathSVG
 
       create widget as "com.livecode.widget.svgpath"
