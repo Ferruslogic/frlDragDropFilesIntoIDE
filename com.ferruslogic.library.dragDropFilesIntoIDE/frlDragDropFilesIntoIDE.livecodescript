@@ -45,7 +45,7 @@ local sDragDestination, sTypeDragDestination
 # The last control that was imported. It is to select it at the end of everything.
 local sLastControl
 
-# Whether to import into the DragDestination or create a new object.
+# Whether to import into the dragDestination or create a new object.
 local sReplace
 
 constant kBynaryStack = "livecode,rev,mc"
@@ -56,7 +56,7 @@ constant kTextPlan = "txt,lng,locale,log,mnu,nfo,inf,ini,inc,bar,cfg,sav,conf,ma
 
 
 on extensionInitialize
-   if the DragDestination is not me then
+   if the target is not me then
       pass extensionInitialize
    end if
 
@@ -67,7 +67,7 @@ on extensionInitialize
 end extensionInitialize
 
 on extensionFinalize
-   if the DragDestination is not me then
+   if the target is not me then
       pass extensionFinalize
    end if
 
@@ -418,7 +418,7 @@ private function _DragDestination
 
    _setDefaultStack
 
-   put the DragDestination into tDragDestination
+   put the dragDestination into tDragDestination
 
    if there is a stack sTopStack then
 
