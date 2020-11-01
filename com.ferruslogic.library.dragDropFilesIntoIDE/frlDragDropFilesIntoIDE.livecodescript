@@ -1,16 +1,17 @@
-﻿script "frlDragDropFilesIntoIDE"
+﻿script "com.ferruslogic.library.dragDropFilesIntoIDE"
 /*
-Copyright (c) 2020 FerrusLogic.
+Copyright (c) 2020 FerrusLogic
 
-The MIT License (MIT)
 Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
+of this software and associated documentation files the frlDragDropFilesIntoIDE, to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
+
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,8 +26,8 @@ allowing you to drag files into the development IDE. So it only runs
 in development mode for the time being.
 
 version 1.0.1
-Date: 2020-07-09 15:20
-Update: 2020-08-06 09:39
+Made: 2020-07-09 15:20
+Last Update: 2020-08-06 09:39
 */
 
 # list of files being dragged.
@@ -39,12 +40,12 @@ local sTopStack
 local sLongIdBackGraphic
 
 # The object that is the object and its type.
-local sTarget, sTypeTarget
+local sDragDestination, sTypeDragDestination
 
 # The last control that was imported. It is to select it at the end of everything.
 local sLastControl
 
-# Whether to import into the target or create a new object.
+# Whether to import into the DragDestination or create a new object.
 local sReplace
 
 constant kBynaryStack = "livecode,rev,mc"
@@ -55,7 +56,7 @@ constant kTextPlan = "txt,lng,locale,log,mnu,nfo,inf,ini,inc,bar,cfg,sav,conf,ma
 
 
 on extensionInitialize
-   if the target is not me then
+   if the DragDestination is not me then
       pass extensionInitialize
    end if
 
@@ -66,7 +67,7 @@ on extensionInitialize
 end extensionInitialize
 
 on extensionFinalize
-   if the target is not me then
+   if the DragDestination is not me then
       pass extensionFinalize
    end if
 
@@ -107,8 +108,8 @@ private command _acceptDrop
          set the layer  of sLongIdBackGraphic to 1
       end try
 
-      put empty into sTarget
-      put empty into sTypeTarget
+      put empty into sDragDestination
+      put empty into sTypeDragDestination
       put empty into sReplace
 
    end if
@@ -150,7 +151,9 @@ on dragDrop
    pass dragDrop
 end dragDrop
 
-on dragEnd -- remove data being dragged
+
+# remove data being dragged.
+on dragEnd
    if sFiles is empty then pass dragEnd
 
    delete the dragSource
@@ -169,9 +172,9 @@ private command _importFile pFilePath
    local tExtencion
    set the itemdel to "."
 
-   put _target() into sTarget
+   put _DragDestination() into sDragDestination
 
-   put word 1 of sTarget into sTypeTarget
+   put word 1 of sDragDestination into sTypeDragDestination
    put item - 1 of pFilePath into tExtencion
 
    if there is a file pFilePath then
@@ -218,27 +221,25 @@ private command _importFile pFilePath
 end _importFile
 
 private  command _importImage pPathOrData, pType
-   local tNameFile, tImageData
-   local tNewImage, tMouseLoc
+   local tNameFile, tImageData, tNewImage, tMouseLoc
 
-   set the itemdel to "/"
+   set the itemdel to slash
 
    _setDefaultStack
 
    if there is a stack sTopStack then
 
       if pType is "file" then
-         if there is a sTarget and sTypeTarget is "image" and sReplace is true  then
+         if there is a sDragDestination and sTypeDragDestination is "image" and sReplace is true  then
 
-            if the filename of sTarget is empty then
-               set the text of sTarget to URL ("binfile:" & pPathOrData)
+            if the filename of sDragDestination is empty then
+               set the text of sDragDestination to URL ("binfile:" & pPathOrData)
             else
-               set the filename of sTarget to _convertPathToRelativePath(pPathOrData)
+               set the filename of sDragDestination to _convertPathToRelativePath(pPathOrData)
             end if
 
-            put sTarget into sLastControl
+            put sDragDestination into sLastControl
             exit _importImage
-
          end if
 
          put the mouseLoc into tMouseLoc
@@ -247,7 +248,6 @@ private  command _importImage pPathOrData, pType
          put item - 1 of pPathOrData into tNameFile
          create image tNameFile in this cd
          put it into tNewImage
-
 
          if the text of tNewImage is empty then
             set the filename of tNewImage to _convertPathToRelativePath(pPathOrData)
@@ -262,19 +262,20 @@ private  command _importImage pPathOrData, pType
 
             put tNewImage into sLastControl
          end if
+
          reset templateImage
 
       else
          local tOldText, tNewText
          put drawingSvgCompileFile(pPathOrData) into tNewText
 
-         if there is a sTarget and sTypeTarget is "image" then
-            put the text of sTarget  into tOldText
+         if there is a sDragDestination and sTypeDragDestination is "image" then
+            put the text of sDragDestination  into tOldText
 
-            set the text of sTarget to tNewText
+            set the text of sDragDestination to tNewText
 
-            if the text of sTarget is empty then
-               set the text of sTarget to tOldText
+            if the text of sDragDestination is empty then
+               set the text of sDragDestination to tOldText
             end if
 
          else
@@ -304,16 +305,16 @@ end _importImage
 
 private command _importPlayer pPathOrData
    local tNameFile, tNumPlayer
-   set the itemdel to "/"
+   set the itemdel to slash
 
    _setDefaultStack
 
    if there is a stack sTopStack then
 
-      if there is a sTarget and sTypeTarget is "player" and sReplace is true then
+      if there is a sDragDestination and sTypeDragDestination is "player" and sReplace is true then
 
-         set the filename of sTarget to _convertPathToRelativePath(pPathOrData)
-         put sTarget into sLastControl
+         set the filename of sDragDestination to _convertPathToRelativePath(pPathOrData)
+         put sDragDestination into sLastControl
       else
          local tNewPlayer, tMouseLoc
 
@@ -341,7 +342,7 @@ end _importPlayer
 private command _importPathSVG pFilePath
    local tNewWidget, tPathSVG
 
-   set the itemdel to "/"
+   set the itemdel to slash
 
    _setDefaultStack
 
@@ -352,14 +353,14 @@ private command _importPathSVG pFilePath
 
          local tKind
          try
-            put the kind of sTarget into tKind
+            put the kind of sDragDestination into tKind
          end try
 
-         if there is a sTarget and sTypeTarget is "widget" and tKind is "com.livecode.widget.svgpath" and sReplace is true then
+         if there is a sDragDestination and sTypeDragDestination is "widget" and tKind is "com.livecode.widget.svgpath" and sReplace is true then
 
-            set the iconPath of sTarget to tPathSVG
+            set the iconPath of sDragDestination to tPathSVG
 
-            put sTarget into sLastControl
+            put sDragDestination into sLastControl
          else
             local tMouseLoc
             put the mouseLoc into tMouseLoc
@@ -393,8 +394,8 @@ command _importTextPlan pFilePath
    if there is a stack sTopStack then
       put URL("file:" & pFilePath) into tText
 
-      if there is a sTarget and sTypeTarget is "field" and sReplace is true then
-         set the text of sTarget to tText
+      if there is a sDragDestination and sTypeDragDestination is "field" and sReplace is true then
+         set the text of sDragDestination to tText
 
       else
          set the text of templateField to tText
@@ -412,37 +413,37 @@ private command _setDefaultStack
    set the defaultStack to sTopStack
 end _setDefaultStack
 
-private function _target
-   local tStack, tTarget
+private function _DragDestination
+   local tStack, tDragDestination
 
    _setDefaultStack
 
-   put the target into tTarget
+   put the DragDestination into tDragDestination
 
    if there is a stack sTopStack then
 
-      if there is  tTarget then
-         put the long id of tTarget into tTarget
+      if there is  tDragDestination then
+         put the long id of tDragDestination into tDragDestination
 
-         put _meOwnerStack(tTarget) into tStack
+         put _meOwnerStack(tDragDestination) into tStack
 
-         if there is a tTarget and  tStack is the long name stack sTopStack then
-            return tTarget
+         if there is a tDragDestination and  tStack is the long name stack sTopStack then
+            return tDragDestination
          end if
 
       end if
 
       return the long id of this cd
    end if
-end _target
+end _DragDestination
 
 private function _meOwnerStack pLongIdControl
-   local tOffset, tLongStack, tTarget
+   local tOffset, tLongStack, tDragDestination
 
-   put the long id of pLongIdControl into tTarget
+   put the long id of pLongIdControl into tDragDestination
 
-   put wordOffset("stack",tTarget) into tOffset
-   put word tOffset to -1 of tTarget into tLongStack
+   put wordOffset("stack",tDragDestination) into tOffset
+   put word tOffset to -1 of tDragDestination into tLongStack
 
    return tLongStack
 end _meOwnerStack

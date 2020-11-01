@@ -1,41 +1,59 @@
 # frlDragDropFilesIntoIDE
 
-## Summary
- Is a helper for LiveCode developers darg and drog files into IDE.
- 
-## Author: 
-[Ferrus Logic.](http://ferruslogic.com/)
+This library allows you to drag image, video, SVG and plain text files and import them into any of the open windows in our LiveCode IDE.
 
-## License: 
-This code was developed by FerrusLogic and is distributed under the MIT license.
 
-## Current Version 1.0.0
- 
-## .
-This code allows you to drag image, video, SVG and stack files to any of the open windows in our LiveCode IDE. This is only to help us when developing so it only runs under the development environment.
- 
-## Drag and drop images, audio, videos, SVG and stacks
-To import an image, audio and video to LiveCode, just drag the or the files to LiveCode and they will be imported into your project.
-Dragging a binary or script-only stack will open it in the LiveCode.
-If you want to change the filename of an image or a player object, just drag and drop the file on top of it.
-You can also import SVG files to LiveCode by dragging and dropping it. It will only be imported if it is supported by LiveCode.
- 
-## How do I start using this extension.
-When started, LiveCode searches a particular folder for your custom extensions. Their locations vary by operating system:
 
-Windows: My Documents / My LiveCode / Extensions
+### LEEME en español [(aquí)](LEEME.md)
 
-OS X: ~ / Documents / My LiveCode / Extensions
 
-Linux: ~ / my_livecode / Extensions /
 
-For this extension to be integrated with the LiveCode you can do it in two ways. The easy and the easiest.
- 
-## The easy way
-You must copy the folder (com.ferruslogic.library.dragDropFilesIntoIDE.1.0.0) as it is in this repository to the root of your LiveCode custom extensions directory.
- 
-## The easiest
-Open the stack startup.livecode and it will copy the extension folder to your custom extensions directory. As long as the folder (com.ferruslogic.library.dragDropFilesIntoIDE.1.0.0) is at the same level as this stack.
+## Author:
 
-# Developed by
-![Ferrus Logic Logo](https://ferruslogic.com/wp-content/uploads/2020/06/logo-Ferrus-Logic.svg)
+Developed by [FerrusLogic](https://ferruslogic.com)
+
+
+
+## License:
+
+frlDragDropFilesIntoIDE is distributed under the [MIT license](LICENSE).
+
+
+
+## Current version: 1.0.1
+
+
+
+## Installation
+
+To install the library use the **startup** stack that is in this repository. It will copy the extension to your LiveCode extensions folder.
+
+## Supported files
+
+The multimedia files that are imported will be those with the following extensions.
+
+### Image:
+
+`` png, jpeg, jpg, gif, bmp, pbm, pgm, ppm, xbm, xpm, xwd, pict, webp, jfif, tif, tiff, dib, vga, pict, pict2, pic ``
+
+### Audio and video:
+
+`` mp3, mp4, mpg, mov, avi, m4a, midi, midi, snd, aac, wma, ogg, mpeg, m2v, mpeg2, qt, ram, rm``
+
+### SVG:
+
+``svg``
+
+### Plane text:
+
+`` txt, lng, locale, log, mnu, nfo, inf, ini, inc, bar, cfg, sav, conf, manifest, lst, ion, rc, properties, mf, list, wbt, lic, css, hs, iss, js, nsi, nsh, java, php, php3, php4, php5, tct, xml, xsml, xsl, kml, adr, sfx ,, sh, bsh, lua, pl, pm, py, as, las, mx , vb, f, for, f90, f95, f2k, tex, mak, tpl, asm, plx, lsp, lisp, scm, smd, ss, kix, au3, ml, mli, sml, thy, ada, ads, adb , v, lhs, cmake, twig, yml``
+
+### Stacks
+
+In addition to the multimedia files, we will also have the possibility of dragging any binary or code-only stack to our IDE to open it.
+
+ `` livecode, livecodescript, rev, mc ``
+
+### Replace one multimedia with another.
+
+To update the content of a multimedia object in our IDE. We press the Alt + Shift keys on Windows and Option + shift on Mac OS. Then we drag and drop the file onto the object. So if we have an image in our stack we press the keys according to our operating system and we drop the file of the new image without releasing the keys and the content of the image will be replaced.
