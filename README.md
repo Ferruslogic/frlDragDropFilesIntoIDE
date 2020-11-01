@@ -6,7 +6,7 @@ This library allows you to drag image, video, SVG and plain text files and impor
 
 ### LEEME en español [(aquí)](LEEME.md)
 
-
+### See the [conduct code](CODE_OF_CONDUCT.md)
 
 ## Author:
 

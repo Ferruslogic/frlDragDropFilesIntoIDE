@@ -6,7 +6,7 @@ Esta librería le permite arrastrar archivos de imagen, video, SVG y textos plan
 
 ### README in Inglese [(here)](README.md)
 
-
+### Ver el [código de conducta](CODIGO_DE_CONDUCTA.md)
 
 ## Autor:
 
