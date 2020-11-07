@@ -1,6 +1,6 @@
 # frlDragDropFilesIntoIDE
 
-Esta librería le permite arrastrar archivos de imagen, video, SVG y textos planos e importarlos a cualquiera de las ventanas abiertas en nuestro IDE de LiveCode.
+Este plugin le permite arrastrar archivos de imagen, video, SVG y textos planos e importarlos a cualquiera de las ventanas abiertas en el IDE de LiveCode.
 
 
 
@@ -26,7 +26,7 @@ frlDragDropFilesIntoIDE se distribuye bajo la [licencia MIT](LICENSE).
 
 ## Instalación
 
-Para instalar la librería use la pila **startup** que está en este repositorio. La misma copiará la extensión a su carpeta de extensiones de LiveCode.
+Para instalar el plugin use la stack **startup** que está en este repositorio. La misma copiará la extensión a su carpeta de extensiones de LiveCode.
 
 ## Archivos soportados
 
