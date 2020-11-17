@@ -51,8 +51,8 @@ local sReplace
 constant kBynaryStack = "livecode,rev,mc"
 constant kScriptOnlyStack = "livecodescript"
 constant kAudio = "mp3,mp4,mpg,mov,avi,m4a,midi,midi,snd,aac,wma,ogg,mpeg,m2v,mpeg2,qt,ram,rm"
-constant kImage = "png,jpeg,jpg,gif,bmp,pbm,pgm,ppm,xbm,xpm,xwd,pict,webp,jfif,tif,tiff,dib,vga,pict,pict2,pic"
-constant kTextPlan = "txt,lng,locale,log,mnu,nfo,inf,ini,inc,bar,cfg,sav,conf,manifest,lst,ion,rc,properties,mf,list,wbt,lic,css,hs,iss,js,nsi,nsh,java,php,php3,php4,php5,tct,xml,xsml,xsl,kml,adr,sfx,,sh,bsh,lua,pl,pm,py,as,las,mx,vb,f,for,f90,f95,f2k,tex,mak,tpl,asm,plx,lsp,lisp,scm,smd,ss,kix,au3,ml,mli,sml,thy,ada,ads,adb,v,lhs,cmake,twig,yml"
+constant kImage = "svg,png,jpeg,jpg,gif,bmp,pbm,pgm,ppm,xbm,xpm,xwd,pict,webp,jfif,tif,tiff,dib,vga,pict,pict2,pic"
+constant kTextPlan = "json,html,htm,txt,lng,locale,log,mnu,nfo,inf,ini,inc,bar,cfg,sav,conf,manifest,lst,ion,rc,properties,mf,list,wbt,lic,css,hs,iss,js,nsi,nsh,java,php,php3,php4,php5,tct,xml,xsml,xsl,kml,adr,sfx,,sh,bsh,lua,pl,pm,py,as,las,mx,vb,f,for,f90,f95,f2k,tex,mak,tpl,asm,plx,lsp,lisp,scm,smd,ss,kix,au3,ml,mli,sml,thy,ada,ads,adb,v,lhs,cmake,twig,yml"
 
 
 on extensionInitialize
@@ -77,19 +77,24 @@ end extensionFinalize
 
 on dragEnter
    set the acceptDrop to _filesTypeDragDrog(sFiles)
+
    _acceptDrop
+
    pass dragEnter
 end dragEnter
 
 
 on dragMove
    _acceptDrop
+
    pass dragMove
 end dragMove
 
 
 private command _acceptDrop
+
    _setDefaultStack
+
    put the dragData["files"] into sFiles
 
    if sFiles is empty then exit _acceptDrop
@@ -101,6 +106,7 @@ private command _acceptDrop
       put it into sLongIdBackGraphic
 
       set the rect of sLongIdBackGraphic to the rect of this cd of stack sTopStack
+
       try
          set the opaque of sLongIdBackGraphic to true
          set the blendlevel of sLongIdBackGraphic to 100
@@ -115,6 +121,7 @@ private command _acceptDrop
    end if
 
    set the acceptDrop to _filesTypeDragDrog(sFiles)
+
 end _acceptDrop
 
 
@@ -126,9 +133,7 @@ on dragDrop
    put the optionKey is down and the shiftKey is down and the number of lines of sFiles is 1  into sReplace
 
    if sFiles is not empty then
-      lock screen
-      lock messages
-      lock cursor
+      lock screen; lock messages;lock cursor
 
       set the cursor to watch
 
@@ -141,6 +146,8 @@ on dragDrop
       choose pointer tool
 
       if there is a sLastControl then
+         focus on nothing
+         select empty
          select sLastControl
       end if
 
@@ -182,7 +189,12 @@ private command _importFile pFilePath
 
       switch
 
-         # LiveCode, Revolution and MetaCard binary stack files
+
+         case tExtencion is "svg"
+            _importPathSVG pFilePath
+            break
+
+            # LiveCode, Revolution and MetaCard binary stack files
          case tExtencion is among the items of kBynaryStack
             unlock messages
             open stack pFilePath
@@ -191,7 +203,7 @@ private command _importFile pFilePath
 
             # Script-only stack
          case tExtencion is kScriptOnlyStack
-            open stack pFilePath
+            --open stack pFilePath
             edit the script of stack pFilePath
             break
 
@@ -205,11 +217,6 @@ private command _importFile pFilePath
             _importPlayer pFilePath
             break
 
-            # SVG
-         case tExtencion is "svg"
-            _importPathSVG pFilePath
-            break
-
             # Text Plan
          case tExtencion is among the items of kTextPlan
             _importTextPlan pFilePath
@@ -220,12 +227,15 @@ private command _importFile pFilePath
    end if
 end _importFile
 
+
 private  command _importImage pPathOrData, pType
    local tNameFile, tImageData, tNewImage, tMouseLoc
 
    set the itemdel to slash
 
    _setDefaultStack
+
+
 
    if there is a stack sTopStack then
 
@@ -451,10 +461,10 @@ end _meOwnerStack
 private command _deleteBackgroundGraphic
 
    if there is sLongIdBackGraphic then
-
       delete sLongIdBackGraphic
       delete variable sLongIdBackGraphic
    end if
+
 end _deleteBackgroundGraphic
 
 private function _convertPathToRelativePath pPath
