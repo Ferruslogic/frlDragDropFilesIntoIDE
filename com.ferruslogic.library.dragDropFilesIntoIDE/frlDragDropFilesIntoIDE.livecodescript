@@ -25,7 +25,7 @@ This small library is to aid in the application creation process by
 allowing you to drag files into the development IDE. So it only runs
 in development mode for the time being.
 
-version 1.0.1
+version 1.0.2
 Made: 2020-07-09 15:20
 Last Update: 2020-08-06 09:39
 */
