@@ -74,55 +74,25 @@ on extensionFinalize
    remove the script of me from front
 end extensionFinalize
 
-
+-- dragEnter, dragMove or dragLeave
 on dragEnter
-   set the acceptDrop to _filesTypeDragDrog(sFiles)
-
-   _acceptDrop
-
+   if sFiles is not empty then _acceptDrop
    pass dragEnter
 end dragEnter
 
 
 on dragMove
-   _acceptDrop
-
+   if sFiles is not empty then _acceptDrop
    pass dragMove
 end dragMove
 
 
-private command _acceptDrop
+on dragLeave
+   if sFiles is not empty then _acceptDrop
+   pass dragLeave
+end dragLeave
 
-   _setDefaultStack
 
-   put the dragData["files"] into sFiles
-
-   if sFiles is empty then exit _acceptDrop
-
-   if the mouse is down and sFiles is not empty and there is not graphic "frlDragDropBack" of this cd of stack sTopStack then
-
-      # I create this graph because the drag & drop message is not generated on the card
-      create invisible graphic "frlDragDropBack" in this cd
-      put it into sLongIdBackGraphic
-
-      set the rect of sLongIdBackGraphic to the rect of this cd of stack sTopStack
-
-      try
-         set the opaque of sLongIdBackGraphic to true
-         set the blendlevel of sLongIdBackGraphic to 100
-         set the visible of sLongIdBackGraphic to true
-         set the layer  of sLongIdBackGraphic to 1
-      end try
-
-      put empty into sDragDestination
-      put empty into sTypeDragDestination
-      put empty into sReplace
-
-   end if
-
-   set the acceptDrop to _filesTypeDragDrog(sFiles)
-
-end _acceptDrop
 
 
 on dragDrop
@@ -151,7 +121,7 @@ on dragDrop
          select sLastControl
       end if
 
-      unlock screen; unlock cursor
+      unlock screen; unlock messages;unlock cursor
       exit dragDrop
    end if
 
@@ -163,20 +133,54 @@ end dragDrop
 on dragEnd
    if sFiles is empty then pass dragEnd
 
-   delete the dragSource
    _deleteBackgroundGraphic
+
    pass dragEnd
 end dragEnd
 
-on dragLeave
-   if sFiles is empty then pass dragLeave
 
-   _deleteBackgroundGraphic
-   pass dragLeave
-end dragLeave
+
+private command _acceptDrop
+
+   _setDefaultStack
+
+   put the dragData["files"] into sFiles
+
+   if sFiles is empty then exit _acceptDrop
+
+   if the mouse is down and sFiles is not empty and there is not graphic "frlDragDropBack" of this cd of stack sTopStack then
+
+      # I create this graph because the drag & drop message is not generated on the card
+      create invisible graphic "frlDragDropBack" in this cd
+      put it into sLongIdBackGraphic
+
+      set the rect of sLongIdBackGraphic to the rect of this cd of stack sTopStack
+
+      try
+         set the opaque of sLongIdBackGraphic to true
+         set the blendlevel of sLongIdBackGraphic to 100
+         set the visible of sLongIdBackGraphic to true
+         set the layer  of sLongIdBackGraphic to bottom
+      end try
+
+      put empty into sDragDestination
+      put empty into sTypeDragDestination
+      put empty into sReplace
+
+   end if
+
+
+   if _filesTypeDragDrog(sFiles) is true then
+      set the dragAction to "copy"
+   else
+      set the dragAction to "none"
+   end if
+end _acceptDrop
+
 
 private command _importFile pFilePath
    local tExtencion
+
    set the itemdel to "."
 
    put _DragDestination() into sDragDestination
@@ -184,11 +188,10 @@ private command _importFile pFilePath
    put word 1 of sDragDestination into sTypeDragDestination
    put item - 1 of pFilePath into tExtencion
 
+   set the itemdel to comma
+
    if there is a file pFilePath then
-      set the itemdel to comma
-
       switch
-
 
          case tExtencion is "svg"
             _importPathSVG pFilePath
@@ -196,14 +199,11 @@ private command _importFile pFilePath
 
             # LiveCode, Revolution and MetaCard binary stack files
          case tExtencion is among the items of kBynaryStack
-            unlock messages
             open stack pFilePath
-            lock messages
             break
 
             # Script-only stack
          case tExtencion is kScriptOnlyStack
-            --open stack pFilePath
             edit the script of stack pFilePath
             break
 
@@ -236,10 +236,10 @@ private  command _importImage pPathOrData, pType
    _setDefaultStack
 
 
-
    if there is a stack sTopStack then
 
       if pType is "file" then
+
          if there is a sDragDestination and sTypeDragDestination is "image" and sReplace is true  then
 
             if the filename of sDragDestination is empty then
@@ -269,6 +269,8 @@ private  command _importImage pPathOrData, pType
             else
                set the loc of tNewImage to (the loc of cd 1 of stack sTopStack)
             end if
+
+            _scaleImage tNewImage
 
             put tNewImage into sLastControl
          end if
@@ -313,6 +315,7 @@ private  command _importImage pPathOrData, pType
 
 end _importImage
 
+
 private command _importPlayer pPathOrData
    local tNameFile, tNumPlayer
    set the itemdel to slash
@@ -349,6 +352,7 @@ private command _importPlayer pPathOrData
 
 end _importPlayer
 
+
 private command _importPathSVG pFilePath
    local tNewWidget, tPathSVG
 
@@ -359,7 +363,7 @@ private command _importPathSVG pFilePath
    put _getPathSVG(pFilePath) into tPathSVG
 
    if there is a stack sTopStack then
-      if  tPathSVG is not empty then
+      if tPathSVG is not empty then
 
          local tKind
          try
@@ -396,6 +400,7 @@ private command _importPathSVG pFilePath
    end if
 end _importPathSVG
 
+
 command _importTextPlan pFilePath
    local tText
 
@@ -408,20 +413,22 @@ command _importTextPlan pFilePath
          set the text of sDragDestination to tText
 
       else
-         set the text of templateField to tText
          create field
+         put it into sLastControl
+         set the text of sLastControl to tText
 
-         reset templateField
       end if
    end if
 
 end _importTextPlan
+
 
 private command _setDefaultStack
 
    put the short name of the topstack into sTopStack
    set the defaultStack to sTopStack
 end _setDefaultStack
+
 
 private function _DragDestination
    local tStack, tDragDestination
@@ -447,6 +454,7 @@ private function _DragDestination
    end if
 end _DragDestination
 
+
 private function _meOwnerStack pLongIdControl
    local tOffset, tLongStack, tDragDestination
 
@@ -458,6 +466,7 @@ private function _meOwnerStack pLongIdControl
    return tLongStack
 end _meOwnerStack
 
+
 private command _deleteBackgroundGraphic
 
    if there is sLongIdBackGraphic then
@@ -466,6 +475,7 @@ private command _deleteBackgroundGraphic
    end if
 
 end _deleteBackgroundGraphic
+
 
 private function _convertPathToRelativePath pPath
    local tStackPath
@@ -552,3 +562,26 @@ private function _filesTypeDragDrog pFiles
 
    return tResult
 end _filesTypeDragDrog
+
+
+private command _scaleImage pLongId
+   local tFormattedWidth, tFormattedHeight, tWidthCard, tHeightCard, tAspectRatio
+
+   _setDefaultStack
+
+   put the formattedWidth of pLongId into tFormattedWidth
+   put the formattedHeight of pLongId into tFormattedHeight
+
+   put the width of this card into tWidthCard
+   put the height of this card into tHeightCard
+
+   if tFormattedWidth is 0 or tFormattedHeight is 0 or (tFormattedWidth < tWidthCard and tFormattedHeight < tHeightCard) then
+      exit _scaleImage
+   end if
+
+   put min(tWidthCard/tFormattedWidth, tHeightCard/tFormattedHeight) into tAspectRatio
+
+   set the width of pLongId to tFormattedWidth * tAspectRatio
+   set the height of pLongId to tFormattedHeight * tAspectRatio
+
+end _scaleImage
