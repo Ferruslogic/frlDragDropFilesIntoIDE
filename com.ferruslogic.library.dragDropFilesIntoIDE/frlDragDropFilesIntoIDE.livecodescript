@@ -25,9 +25,9 @@ This small library is to aid in the application creation process by
 allowing you to drag files into the development IDE. So it only runs
 in development mode for the time being.
 
-version 1.0.2
+version 1.0.3
 Made: 2020-07-09 15:20
-Last Update: 2020-08-06 09:39
+Last Update: 2020-12-04 12:15
 */
 
 # list of files being dragged.
@@ -485,27 +485,51 @@ end _convertPathToRelativePath
 
 
 private function _getPathSVG pFilePath
-   local tInPathSVG, tOutPathSVG, tWidget
+   local tSVG, tPathOpen , tOpen = 0, tClose, tSVGPath, tNumChars, tNewPath
+   set the itemdel to quote
 
-   _setDefaultStack
+   if there is a file pFilePath then
 
-   put empty into tOutPathSVG
+      put URL("file:" & pFilePath ) into tSVG
 
-   if there is a stack sTopStack then
-      put URL("file:" & pFilePath) into tInPathSVG
+      put length(tSVG) into tNumChars
 
-      create widget as "com.livecode.widget.svgpath"
-      put it into tWidget
+      repeat for tNumChars
+         put offset("path", tSVG, tPathOpen) into tOpen
 
-      try
-         set the iconPath of tWidget to tInPathSVG
-         put tInPathSVG into tOutPathSVG
-      end try
+         if tOpen is 0 then exit repeat
+         if tNumChars <= tOpen then exit repeat
+         put tOpen + tPathOpen into tPathOpen
 
-      delete tWidget
+         if the char(tPathOpen - 1) of tSVG is not "<" and char (tPathOpen - 1)  of tSVG is not space then
+            put tPathOpen  + 3 into tPathOpen
+            next repeat
+         end if
+
+         put offset("d=" & quote, tSVG, tPathOpen)  into tOpen
+         if tOpen is 0 then exit repeat
+         put tOpen + tPathOpen  + 3 into tOpen
+
+         put offset(quote, tSVG, tOpen)  into tClose
+         if tClose is 0 then exit repeat
+         put tOpen + tClose into tClose
+
+         put char tOpen to (tClose - 1) of tSVG into tNewPath
+         add 1 to tClose
+         put tClose into tPathOpen
+
+         get (the item 1 to 2 of ( the char tClose to - 1 of tSVG))
+
+         if the trueWord 1 of it is "fill" and the trueWord -1 of it is "none" then
+            next repeat
+         end if
+
+         put tNewPath && cr after tSVGPath
+
+      end repeat
    end if
 
-   return tOutPathSVG
+   return tSVGPath
 end _getPathSVG
 
 
