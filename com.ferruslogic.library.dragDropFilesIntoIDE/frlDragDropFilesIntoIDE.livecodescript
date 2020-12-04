@@ -60,7 +60,7 @@ on extensionInitialize
       pass extensionInitialize
    end if
 
-   if the environment contains "development" then
+   if the environment is "development" then
       insert the script of me into front
       set the _ideoverride of me to true
    end if
@@ -74,21 +74,19 @@ on extensionFinalize
    remove the script of me from front
 end extensionFinalize
 
--- dragEnter, dragMove or dragLeave
 on dragEnter
-   if sFiles is not empty then _acceptDrop
+   if the dragData["files"] is not empty then _acceptDrop
    pass dragEnter
 end dragEnter
 
-
 on dragMove
-   if sFiles is not empty then _acceptDrop
+   if the dragData["files"] is not empty then _acceptDrop
    pass dragMove
 end dragMove
 
 
 on dragLeave
-   if sFiles is not empty then _acceptDrop
+   if the dragData["files"] is not empty then _acceptDrop
    pass dragLeave
 end dragLeave
 
@@ -96,9 +94,11 @@ end dragLeave
 
 
 on dragDrop
-   if sFiles is empty then pass dragDrop
 
    _deleteBackgroundGraphic
+
+   if sFiles is empty then pass dragDrop
+
 
    put the optionKey is down and the shiftKey is down and the number of lines of sFiles is 1  into sReplace
 
@@ -131,10 +131,7 @@ end dragDrop
 
 # remove data being dragged.
 on dragEnd
-   if sFiles is empty then pass dragEnd
-
    _deleteBackgroundGraphic
-
    pass dragEnd
 end dragEnd
 
@@ -145,6 +142,7 @@ private command _acceptDrop
    _setDefaultStack
 
    put the dragData["files"] into sFiles
+
 
    if sFiles is empty then exit _acceptDrop
 
@@ -170,7 +168,7 @@ private command _acceptDrop
    end if
 
 
-   if _filesTypeDragDrog(sFiles) is true then
+   if _filesTypeDragDrop(sFiles) is true then
       set the dragAction to "copy"
    else
       set the dragAction to "none"
@@ -416,7 +414,7 @@ command _importTextPlan pFilePath
          create field
          put it into sLastControl
          set the text of sLastControl to tText
-
+         set the locktext of sLastControl to true
       end if
    end if
 
@@ -469,7 +467,7 @@ end _meOwnerStack
 
 private command _deleteBackgroundGraphic
 
-   if there is sLongIdBackGraphic then
+   if sLongIdBackGraphic is not empty and there is sLongIdBackGraphic then
       delete sLongIdBackGraphic
       delete variable sLongIdBackGraphic
    end if
@@ -543,7 +541,7 @@ private function _getPathSVG pFilePath
 end _getPathSVG
 
 
-private function _filesTypeDragDrog pFiles
+private function _filesTypeDragDrop pFiles
    local tResult, tExtension
    put false into tResult
 
@@ -561,7 +559,7 @@ private function _filesTypeDragDrog pFiles
    end repeat
 
    return tResult
-end _filesTypeDragDrog
+end _filesTypeDragDrop
 
 
 private command _scaleImage pLongId
@@ -583,5 +581,5 @@ private command _scaleImage pLongId
 
    set the width of pLongId to tFormattedWidth * tAspectRatio
    set the height of pLongId to tFormattedHeight * tAspectRatio
-
 end _scaleImage
+
