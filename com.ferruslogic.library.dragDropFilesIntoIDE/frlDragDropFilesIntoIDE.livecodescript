@@ -1,4 +1,4 @@
-﻿script "com.ferruslogic.library.dragDropFilesIntoIDE"
+script "com.ferruslogic.library.dragDropFilesIntoIDE"
 /*
 Copyright (c) 2020 FerrusLogic
 
@@ -25,7 +25,7 @@ This small library is to aid in the application creation process by
 allowing you to drag files into the development IDE. So it only runs
 in development mode for the time being.
 
-version 1.0.3
+version 1.0.4
 Made: 2020-07-09 15:20
 Last Update: 2020-12-04 12:15
 */
@@ -86,19 +86,21 @@ end dragMove
 
 
 on dragLeave
-   if the dragData["files"] is not empty then _acceptDrop
+   if within(stack sTopStack, globalLoc(the mouseLoc)) is false then
+      _deleteBackgroundGraphic
+   end if
    pass dragLeave
 end dragLeave
 
 
-
-
+local sMouseLoc
 on dragDrop
 
    _deleteBackgroundGraphic
 
    if sFiles is empty then pass dragDrop
 
+   put (the mouseLoc) into sMouseLoc
 
    put the optionKey is down and the shiftKey is down and the number of lines of sFiles is 1  into sReplace
 
@@ -141,6 +143,7 @@ private command _acceptDrop
 
    _setDefaultStack
 
+
    put the dragData["files"] into sFiles
 
 
@@ -156,9 +159,11 @@ private command _acceptDrop
 
       try
          set the opaque of sLongIdBackGraphic to true
-         set the blendlevel of sLongIdBackGraphic to 100
-         set the visible of sLongIdBackGraphic to true
+         set the blendlevel of sLongIdBackGraphic to 7
          set the layer  of sLongIdBackGraphic to bottom
+         set the lineSize of sLongIdBackGraphic to 0
+         set the backColor of sLongIdBackGraphic to "YellowGreen"
+         set the visible of sLongIdBackGraphic to true
       end try
 
       put empty into sDragDestination
@@ -173,6 +178,7 @@ private command _acceptDrop
    else
       set the dragAction to "none"
    end if
+
 end _acceptDrop
 
 
@@ -182,6 +188,7 @@ private command _importFile pFilePath
    set the itemdel to "."
 
    put _DragDestination() into sDragDestination
+   _deleteBackgroundGraphic
 
    put word 1 of sDragDestination into sTypeDragDestination
    put item - 1 of pFilePath into tExtencion
@@ -227,12 +234,11 @@ end _importFile
 
 
 private  command _importImage pPathOrData, pType
-   local tNameFile, tImageData, tNewImage, tMouseLoc
+   local tNameFile, tImageData, tNewImage
 
    set the itemdel to slash
 
    _setDefaultStack
-
 
    if there is a stack sTopStack then
 
@@ -247,13 +253,14 @@ private  command _importImage pPathOrData, pType
             end if
 
             put sDragDestination into sLastControl
+
             exit _importImage
          end if
 
-         put the mouseLoc into tMouseLoc
          set the text of templateImage to URL ("binfile:" & pPathOrData)
 
          put item - 1 of pPathOrData into tNameFile
+
          create image tNameFile in this cd
          put it into tNewImage
 
@@ -262,13 +269,15 @@ private  command _importImage pPathOrData, pType
          end if
 
          if there is tNewImage then
-            if within(stack sTopStack, tMouseLoc) then
-               set the loc of tNewImage to tMouseLoc
+
+            _scaleImage tNewImage
+
+            if sMouseLoc is within the rect of card 1 of stack sTopStack then
+               set the loc of tNewImage to sMouseLoc
             else
                set the loc of tNewImage to (the loc of cd 1 of stack sTopStack)
             end if
 
-            _scaleImage tNewImage
 
             put tNewImage into sLastControl
          end if
@@ -289,7 +298,7 @@ private  command _importImage pPathOrData, pType
             end if
 
          else
-            put the mouseLoc into tMouseLoc
+            put the mouseLoc into sMouseLoc
             set the text of templateImage to tNewText
 
             put item - 1 of pPathOrData into tNameFile
@@ -298,14 +307,18 @@ private  command _importImage pPathOrData, pType
 
 
             if there is tNewImage then
-               if within(stack sTopStack, tMouseLoc) then
-                  set the loc of tNewImage to tMouseLoc
+               _scaleImage tNewImage
+
+               if sMouseLoc is within the rect of card 1 of stack sTopStack then
+                  set the loc of tNewImage to sMouseLoc
                else
                   set the loc of tNewImage to (the loc of cd 1 of stack sTopStack)
                end if
 
+
                put tNewImage into sLastControl
             end if
+
             reset templateImage
          end if
       end if
@@ -327,9 +340,8 @@ private command _importPlayer pPathOrData
          set the filename of sDragDestination to _convertPathToRelativePath(pPathOrData)
          put sDragDestination into sLastControl
       else
-         local tNewPlayer, tMouseLoc
+         local tNewPlayer
 
-         put the mouseLoc into tMouseLoc
          set the filename of templatePlayer to _convertPathToRelativePath(pPathOrData)
          set the showController of templatePlayer to true
 
@@ -337,11 +349,12 @@ private command _importPlayer pPathOrData
          create player tNameFile in this cd
          put it into tNewPlayer
 
-         if within(stack sTopStack, tMouseLoc) then
-            set the loc of tNewPlayer to tMouseLoc
+         if sMouseLoc is within the rect of card 1 of stack sTopStack then
+            set the loc of tNewPlayer to sMouseLoc
          else
             set the loc of tNewPlayer to (the loc of cd 1 of stack sTopStack)
          end if
+
          put tNewPlayer into sLastControl
       end if
 
@@ -374,8 +387,7 @@ private command _importPathSVG pFilePath
 
             put sDragDestination into sLastControl
          else
-            local tMouseLoc
-            put the mouseLoc into tMouseLoc
+
 
             create widget as "com.livecode.widget.svgpath" in this cd
             put it into tNewWidget
@@ -384,8 +396,8 @@ private command _importPathSVG pFilePath
             set the width of tNewWidget to 180
             set the height of tNewWidget to 180
 
-            if within(stack sTopStack, tMouseLoc) then
-               set the loc of tNewWidget to tMouseLoc
+            if sMouseLoc is within the rect of card 1 of stack sTopStack then
+               set the loc of tNewWidget to sMouseLoc
             else
                set the loc of tNewWidget to (the loc of cd 1 of stack sTopStack)
             end if
@@ -415,6 +427,12 @@ command _importTextPlan pFilePath
          put it into sLastControl
          set the text of sLastControl to tText
          set the locktext of sLastControl to true
+
+         if sMouseLoc is within the rect of card 1 of stack sTopStack then
+            set the loc of sLastControl to sMouseLoc
+         else
+            set the loc of sLastControl to (the loc of cd 1 of stack sTopStack)
+         end if
       end if
    end if
 
@@ -537,7 +555,18 @@ private function _getPathSVG pFilePath
       end repeat
    end if
 
-   return tSVGPath
+   create widget as "com.livecode.widget.svgpath"
+   put it into tWidget
+
+      local tOutPathSVG = ""
+      try
+         set the iconPath of tWidget to tSVGPath
+         put tSVGPath into tOutPathSVG
+      end try
+
+      delete tWidget
+
+   return tOutPathSVG
 end _getPathSVG
 
 
