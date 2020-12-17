@@ -25,9 +25,9 @@ This small library is to aid in the application creation process by
 allowing you to drag files into the development IDE. So it only runs
 in development mode for the time being.
 
-version 1.0.5
+version 1.0.6
 Made: 2020-07-09 15:20
-Last Update: 2020-12-14 12:15
+Last Update: 2020-12-16 17:03
 */
 
 # list of files being dragged.
@@ -48,13 +48,11 @@ local sLastControl
 # Whether to import into the dragDestination or create a new object.
 local sReplace
 
-local sMouseLoc
-
 constant kBynaryStack = "livecode,rev,mc"
 constant kScriptOnlyStack = "livecodescript"
 constant kAudio = "mp3,mp4,mpg,mov,avi,m4a,midi,midi,snd,aac,wma,ogg,mpeg,m2v,mpeg2,qt,ram,rm"
 constant kImage = "svg,png,jpeg,jpg,gif,bmp,pbm,pgm,ppm,xbm,xpm,xwd,pict,webp,jfif,tif,tiff,dib,vga,pict,pict2,pic"
-constant kTextPlan = "lc,json,html,htm,txt,lng,locale,log,mnu,nfo,inf,ini,inc,bar,cfg,sav,conf,manifest,lst,ion,rc,properties,mf,list,wbt,lic,css,hs,iss,js,nsi,nsh,java,php,php3,php4,php5,tct,xml,xsml,xsl,kml,adr,sfx,,sh,bsh,lua,pl,pm,py,as,las,mx,vb,f,for,f90,f95,f2k,tex,mak,tpl,asm,plx,lsp,lisp,scm,smd,ss,kix,au3,ml,mli,sml,thy,ada,ads,adb,v,lhs,cmake,twig,yml"
+constant kTextPlan = "json,html,htm,txt,lng,locale,log,mnu,nfo,inf,ini,inc,bar,cfg,sav,conf,manifest,lst,ion,rc,properties,mf,list,wbt,lic,css,hs,iss,js,nsi,nsh,java,php,php3,php4,php5,tct,xml,xsml,xsl,kml,adr,sfx,,sh,bsh,lua,pl,pm,py,as,las,mx,vb,f,for,f90,f95,f2k,tex,mak,tpl,asm,plx,lsp,lisp,scm,smd,ss,kix,au3,ml,mli,sml,thy,ada,ads,adb,v,lhs,cmake,twig,yml"
 
 
 on extensionInitialize
@@ -95,6 +93,7 @@ on dragLeave
 end dragLeave
 
 
+local sMouseLoc
 on dragDrop
 
    _deleteBackgroundGraphic
@@ -147,10 +146,8 @@ private command _acceptDrop
 
    put the dragData["files"] into sFiles
 
-   if sFiles is empty or _filesTypeDragDrop(sFiles) is false then
-      _deleteBackgroundGraphic
-      exit _acceptDrop
-   end if
+
+   if sFiles is empty then exit _acceptDrop
 
    if the mouse is down and sFiles is not empty and there is not graphic "frlDragDropBack" of this cd of stack sTopStack then
 
@@ -248,12 +245,18 @@ private  command _importImage pPathOrData, pType
       if pType is "file" then
 
          if there is a sDragDestination and sTypeDragDestination is "image" and sReplace is true  then
+            local tLockLoc
+
+            put the lockLoc of sDragDestination into tLockLoc
+            set the lockLoc of sDragDestination to true
 
             if the filename of sDragDestination is empty then
                set the text of sDragDestination to URL ("binfile:" & pPathOrData)
             else
                set the filename of sDragDestination to _convertPathToRelativePath(pPathOrData)
             end if
+
+            set the lockLoc of sDragDestination to tLockLoc
 
             put sDragDestination into sLastControl
 
@@ -291,38 +294,43 @@ private  command _importImage pPathOrData, pType
          local tOldText, tNewText
          put drawingSvgCompileFile(pPathOrData) into tNewText
 
-         if there is a sDragDestination and sTypeDragDestination is "image" then
-            put the text of sDragDestination  into tOldText
+         if tNewText is not empty then
 
-            set the text of sDragDestination to tNewText
+            if there is a sDragDestination and sTypeDragDestination is "image" then
+               put the text of sDragDestination  into tOldText
 
-            if the text of sDragDestination is empty then
-               set the text of sDragDestination to tOldText
-            end if
+               set the text of sDragDestination to tNewText
 
-         else
-            put the mouseLoc into sMouseLoc
-            set the text of templateImage to tNewText
-
-            put item - 1 of pPathOrData into tNameFile
-            create image tNameFile in this cd
-            put it into tNewImage
-
-
-            if there is tNewImage then
-               _scaleImage tNewImage
-
-               if sMouseLoc is within the rect of card 1 of stack sTopStack then
-                  set the loc of tNewImage to sMouseLoc
-               else
-                  set the loc of tNewImage to (the loc of cd 1 of stack sTopStack)
+               if the text of sDragDestination is empty then
+                  set the text of sDragDestination to tOldText
                end if
 
+            else
+               put the mouseLoc into sMouseLoc
+               set the text of templateImage to tNewText
 
-               put tNewImage into sLastControl
+               put item - 1 of pPathOrData into tNameFile
+               create image tNameFile in this cd
+               put it into tNewImage
+
+
+               if there is tNewImage then
+                  _scaleImage tNewImage
+
+                  if sMouseLoc is within the rect of card 1 of stack sTopStack then
+                     set the loc of tNewImage to sMouseLoc
+                  else
+                     set the loc of tNewImage to (the loc of cd 1 of stack sTopStack)
+                  end if
+
+
+                  put tNewImage into sLastControl
+               end if
+
+               reset templateImage
             end if
-
-            reset templateImage
+         else
+            beep
          end if
       end if
    end if
@@ -523,51 +531,57 @@ private function _getPathSVG pFilePath
 
       put length(tSVG) into tNumChars
 
-      repeat for tNumChars
-         put offset("path", tSVG, tPathOpen) into tOpen
+      if "path" is in tSVG then
+         repeat for tNumChars
+            put offset("path", tSVG, tPathOpen) into tOpen
 
-         if tOpen is 0 then exit repeat
-         if tNumChars <= tOpen then exit repeat
-         put tOpen + tPathOpen into tPathOpen
+            if tOpen is 0 then exit repeat
+            if tNumChars <= tOpen then exit repeat
+            put tOpen + tPathOpen into tPathOpen
 
-         if the char(tPathOpen - 1) of tSVG is not "<" and char (tPathOpen - 1)  of tSVG is not space then
-            put tPathOpen  + 3 into tPathOpen
-            next repeat
-         end if
+            if the char(tPathOpen - 1) of tSVG is not "<" and char (tPathOpen - 1)  of tSVG is not space then
+               put tPathOpen  + 3 into tPathOpen
+               next repeat
+            end if
 
-         put offset("d=" & quote, tSVG, tPathOpen)  into tOpen
-         if tOpen is 0 then exit repeat
-         put tOpen + tPathOpen  + 3 into tOpen
+            put offset("d=" & quote, tSVG, tPathOpen)  into tOpen
+            if tOpen is 0 then exit repeat
+            put tOpen + tPathOpen  + 3 into tOpen
 
-         put offset(quote, tSVG, tOpen)  into tClose
-         if tClose is 0 then exit repeat
-         put tOpen + tClose into tClose
+            put offset(quote, tSVG, tOpen)  into tClose
+            if tClose is 0 then exit repeat
+            put tOpen + tClose into tClose
 
-         put char tOpen to (tClose - 1) of tSVG into tNewPath
-         add 1 to tClose
-         put tClose into tPathOpen
+            put char tOpen to (tClose - 1) of tSVG into tNewPath
+            add 1 to tClose
+            put tClose into tPathOpen
 
-         get (the item 1 to 2 of ( the char tClose to - 1 of tSVG))
+            get (the item 1 to 2 of ( the char tClose to - 1 of tSVG))
 
-         if the trueWord 1 of it is "fill" and the trueWord -1 of it is "none" then
-            next repeat
-         end if
+            if the trueWord 1 of it is "fill" and the trueWord -1 of it is "none" then
+               next repeat
+            end if
 
-         put tNewPath && cr after tSVGPath
+            put tNewPath && cr after tSVGPath
 
-      end repeat
+         end repeat
+      end if
+   else
+
+      put tSVG into tSVGPath
    end if
+
+   local tWidget, tOutPathSVG
 
    create widget as "com.livecode.widget.svgpath"
    put it into tWidget
 
-      local tOutPathSVG = ""
-      try
-         set the iconPath of tWidget to tSVGPath
-         put tSVGPath into tOutPathSVG
-      end try
+   try
+      set the iconPath of tWidget to tSVGPath
+      put tSVGPath into tOutPathSVG
+   end try
 
-      delete tWidget
+   delete tWidget
 
    return tOutPathSVG
 end _getPathSVG

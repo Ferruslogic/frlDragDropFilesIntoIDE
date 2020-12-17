@@ -20,13 +20,13 @@ frlDragDropFilesIntoIDE se distribuye bajo la [licencia MIT](LICENSE).
 
 
 
-## Versión actual: 1.0.5
+## Versión actual: 1.0.6
 
 
 
 ## Instalación
 
-Para instalar el plugin use la stack **startup** que está en este repositorio. La misma copiará la extensión a su carpeta de extensiones de LiveCode.
+Para instalar el plugin use la stack **dragdropFilesIntoIDEInstaller.livecode**. La misma copiará la extensión a su carpeta de extensiones de LiveCode.
 
 ## Archivos soportados
 
