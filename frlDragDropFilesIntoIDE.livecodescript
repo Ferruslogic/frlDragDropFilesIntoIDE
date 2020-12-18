@@ -1,4 +1,4 @@
-﻿script "com.ferruslogic.library.dragDropFilesIntoIDE"
+script "com.ferruslogic.library.dragDropFilesIntoIDE"
 /*
 Copyright (c) 2020 FerrusLogic
 
@@ -49,7 +49,7 @@ local sDragDestination, sTypeDragDestination
 local sLastControl
 
 # Whether to import into the dragDestination or create a new object.
-local sReplace
+local sOptionShift
 
 constant kBynaryStack = "livecode,rev,mc"
 constant kScriptOnlyStack = "livecodescript"
@@ -59,24 +59,23 @@ constant kTextPlan = "json,html,htm,txt,lng,locale,log,mnu,nfo,inf,ini,inc,bar,c
 constant kLiveCodeExtension = "lce"
 
 on extensionInitialize
-  if the target is not me then
-     pass extensionInitialize
-  end if
+   if the target is not me then
+      pass extensionInitialize
+   end if
 
-  if the environment is "development" then
-     insert the script of me into front
-     set the _ideoverride of me to true
-  end if
+   if the environment is "development" then
+      insert the script of me into front
+      set the _ideoverride of me to true
+   end if
 end extensionInitialize
 
 on extensionFinalize
-  if the target is not me then
-     pass extensionFinalize
-  end if
+   if the target is not me then
+      pass extensionFinalize
+   end if
 
-  remove the script of me from front
+   remove the script of me from front
 end extensionFinalize
-
 
 
 on dragEnter
@@ -119,7 +118,7 @@ on dragDrop
 
    put the mouseLoc into sMouseLoc
 
-   put the optionKey is down and the shiftKey is down and the number of lines of sFiles is 1  into sReplace
+   put the optionKey is down and the shiftKey is down and the number of lines of sFiles is 1  into sOptionShift
    put the controlKey is down and the shiftKey is down into sCtrlShift
 
    if sFiles is not empty then
@@ -154,6 +153,7 @@ on dragEnd
    _deleteBackgroundGraphic
    pass dragEnd
 end dragEnd
+
 
 # remove data being dragged.
 on suspendStack
@@ -202,7 +202,7 @@ private command _acceptDrop
 
       put empty into sDragDestination
       put empty into sTypeDragDestination
-      put empty into sReplace
+      put empty into sOptionShift
 
       if _ItIsIDEStack(sMouseStack) is true
       then set the blendlevel of sLongIdBackGraphic to 100
@@ -231,7 +231,7 @@ private command _importFile pFilePath
 
    if there is a file pFilePath then
       switch
-
+            # SVG
          case tExtension is "svg"
             _importPathSVG pFilePath
             break
@@ -290,7 +290,7 @@ private  command _importImage pPathOrData, pType
 
       if pType is "file" then
 
-         if there is a sDragDestination and sTypeDragDestination is "image" and sReplace is true  then
+         if there is a sDragDestination and sTypeDragDestination is "image" and sOptionShift is true  then
             local tLockLoc
 
             put the lockLoc of sDragDestination into tLockLoc
@@ -386,129 +386,129 @@ end _importImage
 
 
 private command _importPlayer pPathOrData
-  local tNameFile, tNumPlayer
-  set the itemdel to slash
+   local tNameFile, tNumPlayer
+   set the itemdel to slash
 
-  _setDefaultStack
+   _setDefaultStack
 
-  if _ItIsIDEStack(sMouseStack) is true then
-     put the short name of the topStack into sMouseStack
-     set the defaultstack to sMouseStack
-  end if
+   if _ItIsIDEStack(sMouseStack) is true then
+      put the short name of the topStack into sMouseStack
+      set the defaultstack to sMouseStack
+   end if
 
 
-  if there is a stack sMouseStack and not _ItIsIDEStack(sMouseStack) then
+   if there is a stack sMouseStack and not _ItIsIDEStack(sMouseStack) then
 
-     if there is a sDragDestination and sTypeDragDestination is "player" and sReplace is true then
+      if there is a sDragDestination and sTypeDragDestination is "player" and sOptionShift is true then
 
-        set the filename of sDragDestination to _convertPathToRelativePath(pPathOrData)
-        put sDragDestination into sLastControl
-     else
-        local tNewPlayer
+         set the filename of sDragDestination to _convertPathToRelativePath(pPathOrData)
+         put sDragDestination into sLastControl
+      else
+         local tNewPlayer
 
-        set the filename of templatePlayer to _convertPathToRelativePath(pPathOrData)
-        set the showController of templatePlayer to true
+         set the filename of templatePlayer to _convertPathToRelativePath(pPathOrData)
+         set the showController of templatePlayer to true
 
-        put item - 1 of pPathOrData into tNameFile
-        create player tNameFile in this cd
-        put it into tNewPlayer
+         put item - 1 of pPathOrData into tNameFile
+         create player tNameFile in this cd
+         put it into tNewPlayer
 
-        if sMouseLoc is within the rect of card 1 of stack sMouseStack then
-           set the loc of tNewPlayer to sMouseLoc
-        else
-           set the loc of tNewPlayer to (the loc of cd 1 of stack sMouseStack)
-        end if
+         if sMouseLoc is within the rect of card 1 of stack sMouseStack then
+            set the loc of tNewPlayer to sMouseLoc
+         else
+            set the loc of tNewPlayer to (the loc of cd 1 of stack sMouseStack)
+         end if
 
-        put tNewPlayer into sLastControl
-     end if
+         put tNewPlayer into sLastControl
+      end if
 
-     reset templatePlayer
-  end if
+      reset templatePlayer
+   end if
 
 end _importPlayer
 
 
 private command _importPathSVG pFilePath
-  local tNewWidget, tPathSVG
+   local tNewWidget, tPathSVG
 
-  set the itemdel to slash
+   set the itemdel to slash
 
-  _setDefaultStack
+   _setDefaultStack
 
-  if _ItIsIDEStack(sMouseStack) is true then
-     put the short name of the topStack into sMouseStack
-     set the defaultstack to sMouseStack
-  end if
+   if _ItIsIDEStack(sMouseStack) is true then
+      put the short name of the topStack into sMouseStack
+      set the defaultstack to sMouseStack
+   end if
 
-  put _getPathSVG(pFilePath) into tPathSVG
+   put _getPathSVG(pFilePath) into tPathSVG
 
-  if there is a stack sMouseStack and not _ItIsIDEStack(sMouseStack) then
-     if tPathSVG is not empty then
+   if there is a stack sMouseStack and not _ItIsIDEStack(sMouseStack) then
+      if tPathSVG is not empty then
 
-        local tKind
-        try
-           put the kind of sDragDestination into tKind
-        end try
+         local tKind
+         try
+            put the kind of sDragDestination into tKind
+         end try
 
-        if there is a sDragDestination and sTypeDragDestination is "widget" and tKind is "com.livecode.widget.svgpath" and sReplace is true then
+         if there is a sDragDestination and sTypeDragDestination is "widget" and tKind is "com.livecode.widget.svgpath" and sOptionShift is true then
 
-           set the iconPath of sDragDestination to tPathSVG
+            set the iconPath of sDragDestination to tPathSVG
 
-           put sDragDestination into sLastControl
-        else
+            put sDragDestination into sLastControl
+         else
 
 
-           create widget as "com.livecode.widget.svgpath" in this cd
-           put it into tNewWidget
+            create widget as "com.livecode.widget.svgpath" in this cd
+            put it into tNewWidget
 
-           set the iconPath of tNewWidget to tPathSVG
-           set the width of tNewWidget to 180
-           set the height of tNewWidget to 180
+            set the iconPath of tNewWidget to tPathSVG
+            set the width of tNewWidget to 180
+            set the height of tNewWidget to 180
 
-           if sMouseLoc is within the rect of card 1 of stack sMouseStack then
-              set the loc of tNewWidget to sMouseLoc
-           else
-              set the loc of tNewWidget to (the loc of cd 1 of stack sMouseStack)
-           end if
+            if sMouseLoc is within the rect of card 1 of stack sMouseStack then
+               set the loc of tNewWidget to sMouseLoc
+            else
+               set the loc of tNewWidget to (the loc of cd 1 of stack sMouseStack)
+            end if
 
-           put tNewWidget into sLastControl
-        end if
-     else
-        _importImage pFilePath, "SVG_Data"
-     end if
-  end if
+            put tNewWidget into sLastControl
+         end if
+      else
+         _importImage pFilePath, "SVG_Data"
+      end if
+   end if
 end _importPathSVG
 
 
 private command _importTextPlan pFilePath
-  local tText
+   local tText
 
-  _setDefaultStack
+   _setDefaultStack
 
-  if _ItIsIDEStack(sMouseStack) is true then
-     put the short name of the topStack into sMouseStack
-     set the defaultstack to sMouseStack
-  end if
+   if _ItIsIDEStack(sMouseStack) is true then
+      put the short name of the topStack into sMouseStack
+      set the defaultstack to sMouseStack
+   end if
 
-  if there is a stack sMouseStack and not _ItIsIDEStack(sMouseStack) then
-     put URL("file:" & pFilePath) into tText
+   if there is a stack sMouseStack and not _ItIsIDEStack(sMouseStack) then
+      put URL("file:" & pFilePath) into tText
 
-     if there is a sDragDestination and sTypeDragDestination is "field" and sReplace is true then
-        set the text of sDragDestination to tText
+      if there is a sDragDestination and sTypeDragDestination is "field" and sOptionShift is true then
+         set the text of sDragDestination to tText
 
-     else
-        create field
-        put it into sLastControl
-        set the text of sLastControl to tText
-        set the locktext of sLastControl to true
+      else
+         create field
+         put it into sLastControl
+         set the text of sLastControl to tText
+         set the locktext of sLastControl to true
 
-        if sMouseLoc is within the rect of card 1 of stack sMouseStack then
-           set the loc of sLastControl to sMouseLoc
-        else
-           set the loc of sLastControl to (the loc of cd 1 of stack sMouseStack)
-        end if
-     end if
-  end if
+         if sMouseLoc is within the rect of card 1 of stack sMouseStack then
+            set the loc of sLastControl to sMouseLoc
+         else
+            set the loc of sLastControl to (the loc of cd 1 of stack sMouseStack)
+         end if
+      end if
+   end if
 
 end _importTextPlan
 
@@ -520,39 +520,39 @@ end _installExtension
 
 
 private command _setDefaultStack
-  if there is a the mouseStack then put the short name of the mouseStack into sMouseStack
+   if there is a the mouseStack then put the short name of the mouseStack into sMouseStack
 
-  if sOldMouseStack is not sMouseStack then
-     _deleteBackgroundGraphic
-  end if
+   if sOldMouseStack is not sMouseStack then
+      _deleteBackgroundGraphic
+   end if
 
-  put sMouseStack into sOldMouseStack
-  set the defaultStack to sMouseStack
+   put sMouseStack into sOldMouseStack
+   set the defaultStack to sMouseStack
 end _setDefaultStack
 
 
 private function _dragDestination
-  local tStack, tDragDestination
+   local tStack, tDragDestination
 
-  _setDefaultStack
+   _setDefaultStack
 
-  put the dragDestination into tDragDestination
+   put the dragDestination into tDragDestination
 
-  if there is an stack sMouseStack then
+   if there is an stack sMouseStack then
 
-     if there is  tDragDestination then
-        put the long id of tDragDestination into tDragDestination
+      if there is  tDragDestination then
+         put the long id of tDragDestination into tDragDestination
 
-        put ideStackOfObject(tDragDestination) into tStack
+         put ideStackOfObject(tDragDestination) into tStack
 
-        if there is a tDragDestination and tStack is the long name stack sMouseStack then
-           return tDragDestination
-        end if
+         if there is a tDragDestination and tStack is the long name stack sMouseStack then
+            return tDragDestination
+         end if
 
-     end if
+      end if
 
-     return the long id of this cd
-  end if
+      return the long id of this cd
+   end if
 end _dragDestination
 
 
@@ -567,85 +567,85 @@ end _deleteBackgroundGraphic
 
 
 private function _convertPathToRelativePath pPath
-  local tStackPath
+   local tStackPath
 
-  set the itemdel to slash
+   set the itemdel to slash
 
-  if there is not a stack sMouseStack then return pPath
+   if there is not a stack sMouseStack then return pPath
 
-  put item 1 to - 2 of the effective filename of stack sMouseStack into tStackPath
-  if there is not a folder tStackPath then return pPath
+   put item 1 to - 2 of the effective filename of stack sMouseStack into tStackPath
+   if there is not a folder tStackPath then return pPath
 
-  replace backslash with slash in pPath
-  replace tStackPath & slash with empty in pPath
+   replace backslash with slash in pPath
+   replace tStackPath & slash with empty in pPath
 
-  return pPath
+   return pPath
 end _convertPathToRelativePath
 
 
 private function _getPathSVG pFilePath
-  local tSVG, tPathOpen , tOpen = 0, tClose, tSVGPath, tNumChars, tNewPath
-  set the itemdel to quote
+   local tSVG, tPathOpen , tOpen = 0, tClose, tSVGPath, tNumChars, tNewPath
+   set the itemdel to quote
 
-  if there is a file pFilePath then
+   if there is a file pFilePath then
 
-     put URL("file:" & pFilePath ) into tSVG
+      put URL("file:" & pFilePath ) into tSVG
 
-     put length(tSVG) into tNumChars
+      put length(tSVG) into tNumChars
 
-     if "path" is in tSVG then
-        repeat for tNumChars
-           put offset("path", tSVG, tPathOpen) into tOpen
+      if "path" is in tSVG then
+         repeat for tNumChars
+            put offset("path", tSVG, tPathOpen) into tOpen
 
-           if tOpen is 0 then exit repeat
-           if tNumChars <= tOpen then exit repeat
-           put tOpen + tPathOpen into tPathOpen
+            if tOpen is 0 then exit repeat
+            if tNumChars <= tOpen then exit repeat
+            put tOpen + tPathOpen into tPathOpen
 
-           if the char(tPathOpen - 1) of tSVG is not "<" and char (tPathOpen - 1)  of tSVG is not space then
-              put tPathOpen  + 3 into tPathOpen
-              next repeat
-           end if
+            if the char(tPathOpen - 1) of tSVG is not "<" and char (tPathOpen - 1)  of tSVG is not space then
+               put tPathOpen  + 3 into tPathOpen
+               next repeat
+            end if
 
-           put offset("d=" & quote, tSVG, tPathOpen)  into tOpen
-           if tOpen is 0 then exit repeat
-           put tOpen + tPathOpen  + 3 into tOpen
+            put offset("d=" & quote, tSVG, tPathOpen)  into tOpen
+            if tOpen is 0 then exit repeat
+            put tOpen + tPathOpen  + 3 into tOpen
 
-           put offset(quote, tSVG, tOpen)  into tClose
-           if tClose is 0 then exit repeat
-           put tOpen + tClose into tClose
+            put offset(quote, tSVG, tOpen)  into tClose
+            if tClose is 0 then exit repeat
+            put tOpen + tClose into tClose
 
-           put char tOpen to (tClose - 1) of tSVG into tNewPath
-           add 1 to tClose
-           put tClose into tPathOpen
+            put char tOpen to (tClose - 1) of tSVG into tNewPath
+            add 1 to tClose
+            put tClose into tPathOpen
 
-           get (the item 1 to 2 of ( the char tClose to - 1 of tSVG))
+            get (the item 1 to 2 of ( the char tClose to - 1 of tSVG))
 
-           if the trueWord 1 of it is "fill" and the trueWord -1 of it is "none" then
-              next repeat
-           end if
+            if the trueWord 1 of it is "fill" and the trueWord -1 of it is "none" then
+               next repeat
+            end if
 
-           put tNewPath && cr after tSVGPath
+            put tNewPath && cr after tSVGPath
 
-        end repeat
-     end if
-  else
+         end repeat
+      end if
+   else
 
-     put tSVG into tSVGPath
-  end if
+      put tSVG into tSVGPath
+   end if
 
-  local tWidget, tOutPathSVG
+   local tWidget, tOutPathSVG
 
-  create widget as "com.livecode.widget.svgpath"
-  put it into tWidget
+   create widget as "com.livecode.widget.svgpath"
+   put it into tWidget
 
-  try
-     set the iconPath of tWidget to tSVGPath
-     put tSVGPath into tOutPathSVG
-  end try
+   try
+      set the iconPath of tWidget to tSVGPath
+      put tSVGPath into tOutPathSVG
+   end try
 
-  delete tWidget
+   delete tWidget
 
-  return tOutPathSVG
+   return tOutPathSVG
 end _getPathSVG
 
 
@@ -672,49 +672,49 @@ end _filesTypeDragDrop
 
 
 private command _scaleImage pLongId
-  local tFormattedWidth, tFormattedHeight, tWidthCard, tHeightCard, tAspectRatio
+   local tFormattedWidth, tFormattedHeight, tWidthCard, tHeightCard, tAspectRatio
 
-  _setDefaultStack
+   _setDefaultStack
 
-  if _ItIsIDEStack(sMouseStack) is true then
-     put the short name of the topStack into sMouseStack
-     set the defaultstack to sMouseStack
-  end if
+   if _ItIsIDEStack(sMouseStack) is true then
+      put the short name of the topStack into sMouseStack
+      set the defaultstack to sMouseStack
+   end if
 
-  put the formattedWidth of pLongId into tFormattedWidth
-  put the formattedHeight of pLongId into tFormattedHeight
+   put the formattedWidth of pLongId into tFormattedWidth
+   put the formattedHeight of pLongId into tFormattedHeight
 
-  put the width of this card into tWidthCard
-  put the height of this card into tHeightCard
+   put the width of this card into tWidthCard
+   put the height of this card into tHeightCard
 
-  if tFormattedWidth is 0 or tFormattedHeight is 0 or (tFormattedWidth < tWidthCard and tFormattedHeight < tHeightCard) then
-     exit _scaleImage
-  end if
+   if tFormattedWidth is 0 or tFormattedHeight is 0 or (tFormattedWidth < tWidthCard and tFormattedHeight < tHeightCard) then
+      exit _scaleImage
+   end if
 
-  put min(tWidthCard/tFormattedWidth, tHeightCard/tFormattedHeight) into tAspectRatio
+   put min(tWidthCard/tFormattedWidth, tHeightCard/tFormattedHeight) into tAspectRatio
 
-  set the width of pLongId to tFormattedWidth * tAspectRatio
-  set the height of pLongId to tFormattedHeight * tAspectRatio
+   set the width of pLongId to tFormattedWidth * tAspectRatio
+   set the height of pLongId to tFormattedHeight * tAspectRatio
 end _scaleImage
 
 
 private function _ItIsIDEStack pNameStack
-  if there is not a stack pNameStack then return false
-  return the mainstack of stack pNameStack is not among the lines of ideUserMainStacks()
+   if there is not a stack pNameStack then return false
+   return the mainstack of stack pNameStack is not among the lines of ideUserMainStacks()
 end _ItIsIDEStack
 
 
 private command _cancelPendingMessages pMessageName
-  local tPendingMessages
+   local tPendingMessages
 
-  set the itemDelimiter to comma
-  put the pendingMessages into tPendingMessages
+   set the itemDelimiter to comma
+   put the pendingMessages into tPendingMessages
 
-  repeat for each line tMessage in tPendingMessages
-     if item 3 of tMessage is pMessageName then
-        cancel item 1 of tMessage
-     end if
-  end repeat
+   repeat for each line tMessage in tPendingMessages
+      if item 3 of tMessage is pMessageName then
+         cancel item 1 of tMessage
+      end if
+   end repeat
 end _cancelPendingMessages
 
 
