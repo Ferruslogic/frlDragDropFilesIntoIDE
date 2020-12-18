@@ -47,6 +47,10 @@ The multimedia files that are imported will be those with the following extensio
 
 `` txt, lng, locale, log, mnu, nfo, inf, ini, inc, bar, cfg, sav, conf, manifest, lst, ion, rc, properties, mf, list, wbt, lic, css, hs, iss, js, nsi, nsh, java, php, php3, php4, php5, tct, xml, xsml, xsl, kml, adr, sfx ,, sh, bsh, lua, pl, pm, py, as, las, mx , vb, f, for, f90, f95, f2k, tex, mak, tpl, asm, plx, lsp, lisp, scm, smd, ss, kix, au3, ml, mli, sml, thy, ada, ads, adb , v, lhs, cmake, twig, yml``
 
+### Extension for LiveCode
+
+``lce``
+
 ### Stacks
 
 In addition to the multimedia files, we also have the possibility of dragging any binary or code-only stack to our IDE to open it.

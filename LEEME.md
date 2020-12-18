@@ -48,6 +48,10 @@ Los archivos multimedia que se importan serán aquellos que tengan las siguiente
 
 ``txt,lng,locale,log,mnu,nfo,inf,ini,inc,bar,cfg,sav,conf,manifest,lst,ion,rc,properties,mf,list,wbt,lic,css,hs,iss,js,nsi,nsh,java,php,php3,php4,php5,tct,xml,xsml,xsl,kml,adr,sfx,,sh,bsh,lua,pl,pm,py,as,las,mx,vb,f,for,f90,f95,f2k,tex,mak,tpl,asm,plx,lsp,lisp,scm,smd,ss,kix,au3,ml,mli,sml,thy,ada,ads,adb,v,lhs,cmake,twig,yml``
 
+### Extensión para LiveCode
+
+``lce``
+
 ### Pilas
 
 Además de los archivos multimedia también tendremos la posibilidad de arrastrar cualquier pila binaria o de solo código a nuestro IDE para abrirla.
