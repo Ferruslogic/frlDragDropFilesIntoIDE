@@ -47,16 +47,20 @@ The multimedia files that are imported will be those with the following extensio
 
 `` txt, lng, locale, log, mnu, nfo, inf, ini, inc, bar, cfg, sav, conf, manifest, lst, ion, rc, properties, mf, list, wbt, lic, css, hs, iss, js, nsi, nsh, java, php, php3, php4, php5, tct, xml, xsml, xsl, kml, adr, sfx ,, sh, bsh, lua, pl, pm, py, as, las, mx , vb, f, for, f90, f95, f2k, tex, mak, tpl, asm, plx, lsp, lisp, scm, smd, ss, kix, au3, ml, mli, sml, thy, ada, ads, adb , v, lhs, cmake, twig, yml``
 
-### Extension for LiveCode
-
-``lce``
-
 ### Stacks
 
 In addition to the multimedia files, we also have the possibility of dragging any binary or code-only stack to our IDE to open it.
 
  `` livecode, livecodescript, rev, mc ``
 
+### Extension for LiveCode
+
+También podemos instalar las extensiones a nuestro LiveCode solo arrastrándola a cualquier stack.
+
+``lce``
+
 ### Replace one multimedia with another.
 
 To update the content of a multimedia object in the IDE. We press the Alt + Shift keys on Windows and Option + shift on Mac OS. Then we drag and drop the file onto the object. So if we have an image in our stack we press the keys according to our operating system and we drop the file of the new image without releasing the keys and the content of the image will be replaced.
+
+In the case of images, they are embedded in the stack. But if we want them to be referenced images, we hold down the Ctrl + Shif keys.

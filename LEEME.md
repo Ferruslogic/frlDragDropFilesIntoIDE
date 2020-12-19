@@ -48,16 +48,20 @@ Los archivos multimedia que se importan serán aquellos que tengan las siguiente
 
 ``txt,lng,locale,log,mnu,nfo,inf,ini,inc,bar,cfg,sav,conf,manifest,lst,ion,rc,properties,mf,list,wbt,lic,css,hs,iss,js,nsi,nsh,java,php,php3,php4,php5,tct,xml,xsml,xsl,kml,adr,sfx,,sh,bsh,lua,pl,pm,py,as,las,mx,vb,f,for,f90,f95,f2k,tex,mak,tpl,asm,plx,lsp,lisp,scm,smd,ss,kix,au3,ml,mli,sml,thy,ada,ads,adb,v,lhs,cmake,twig,yml``
 
-### Extensión para LiveCode
-
-``lce``
-
 ### Pilas
 
 Además de los archivos multimedia también tendremos la posibilidad de arrastrar cualquier pila binaria o de solo código a nuestro IDE para abrirla.
 
  ``livecode,livecodescript,rev,mc``
 
+### Extensión para LiveCode
+
+También podemos instalar las extensiones a nuestro LiveCode solo arrastrándola a cualquier stack.
+
+``lce``
+
 ### Remplaza una multimedia por otra.
 
 Para actualizar el contenido de un objeto multimedia en nuestro IDE. Presionamos las teclas de Alt + Shift en Windows y Option + shift en Mac OS. Luego arrastramos y soltamos el archivo sobre el objeto. Por lo que si tenemos una imagen en nuestra pila presionamos las teclas según nuestro sistema operativo y soltamos el archivo de la nueva imagen sin soltar las teclas y se remplazara el contenido de la imagen.
+
+En el caso de las imágenes por defecto se empotrarán en la stack. Pero si queremos que sean imágenes referenciadas, mantenemos presionadas las teclas Ctrl + Shif.
