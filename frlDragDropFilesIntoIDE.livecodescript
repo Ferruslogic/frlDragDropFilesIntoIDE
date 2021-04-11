@@ -79,13 +79,13 @@ end extensionFinalize
 
 
 on dragEnter
-   if the dragData["files"] is not empty then _acceptDrop
+   if the tool is not "browse tool" and the dragData["files"] is not empty then _acceptDrop
    pass dragEnter
 end dragEnter
 
 
 on dragMove
-   if the dragData["files"] is not empty  then _acceptDrop
+   if the tool is not "browse tool" and the dragData["files"] is not empty  then _acceptDrop
    pass dragMove
 end dragMove
 
@@ -100,7 +100,7 @@ local sCtrlShift
 on dragDrop
 
    _deleteBackgroundGraphic
-   if sFiles is empty then pass dragDrop
+   if the tool is "browse tool" or sFiles is empty then pass dragDrop
 
    _setDefaultStack
    if _ItIsIDEStack(sMouseStack) is true then
@@ -122,6 +122,8 @@ on dragDrop
          _importFile tFile
       end repeat
 
+      set the dragData to empty
+      set the clipboardData to empty
       unlock messages
 
       choose pointer tool
@@ -214,7 +216,7 @@ private command _importFile pFilePath
    set the itemdel to "."
 
    breakpoint
-   
+
    lock messages
    put _dragDestination() into sDragDestination
 
@@ -426,49 +428,49 @@ end _importPlayer
 
 private command _importPathSVG pFilePath
     local tNewWidget, tPathSVG, tName
-    
+
     set the itemdel to slash
-    
+
     put last item of pFilePath into tName
-    
+
     _setDefaultStack
-    
+
     if _ItIsIDEStack(sMouseStack) is true then
         put the short name of the topStack into sMouseStack
         set the defaultstack to sMouseStack
     end if
-    
+
     put _getPathSVG(pFilePath) into tPathSVG
-    
+
     if there is a stack sMouseStack and not _ItIsIDEStack(sMouseStack) then
         if tPathSVG is not empty then
-            
+
             local tKind
             try
                 put the kind of sDragDestination into tKind
             end try
-            
+
             if there is a sDragDestination and sTypeDragDestination is "widget" and tKind is "com.livecode.widget.svgpath" and sOptionShift is true then
-                
+
                 set the iconPath of sDragDestination to tPathSVG
-                
+
                 put sDragDestination into sLastControl
             else
-                
-                
+
+
                 create widget tName as "com.livecode.widget.svgpath" in this cd
                 put it into tNewWidget
-                
+
                 set the iconPath of tNewWidget to tPathSVG
                 set the width of tNewWidget to 180
                 set the height of tNewWidget to 180
-                
+
                 if sMouseLoc is within the rect of card 1 of stack sMouseStack then
                     set the loc of tNewWidget to sMouseLoc
                 else
                     set the loc of tNewWidget to (the loc of cd 1 of stack sMouseStack)
                 end if
-                
+
                 put tNewWidget into sLastControl
             end if
         else
@@ -480,26 +482,26 @@ end _importPathSVG
 
 private command _importTextPlan pFilePath
     local tText
-    
+
     _setDefaultStack
-    
+
     if _ItIsIDEStack(sMouseStack) is true then
         put the short name of the topStack into sMouseStack
         set the defaultstack to sMouseStack
     end if
-    
+
     if there is a stack sMouseStack and not _ItIsIDEStack(sMouseStack) then
         put URL("file:" & pFilePath) into tText
-        
+
         if there is a sDragDestination and sTypeDragDestination is "field" and sOptionShift is true then
             set the text of sDragDestination to tText
-            
+
         else
             create field ( the last item of pFilePath)
             put it into sLastControl
             set the text of sLastControl to tText
             set the locktext of sLastControl to true
-            
+
             if sMouseLoc is within the rect of card 1 of stack sMouseStack then
                 set the loc of sLastControl to sMouseLoc
             else
@@ -507,7 +509,7 @@ private command _importTextPlan pFilePath
             end if
         end if
     end if
-    
+
 end _importTextPlan
 
 
@@ -583,70 +585,70 @@ end _convertPathToRelativePath
 
 private function _getPathSVG pFilePath
     local tSVG, tPathOpen , tOpen = 0, tClose, tSVGPath, tNumChars, tNewPath, tName
-    
+
     set the itemdel to slash
     put the last item of pFilePath into tName
-    
+
     set the itemdel to quote
-    
+
     if there is a file pFilePath then
-        
+
         put URL( "file:" & pFilePath ) into tSVG
-        
+
         put length(tSVG) into tNumChars
-        
+
         if "path" is in tSVG then
             repeat for tNumChars
                 put offset("path", tSVG, tPathOpen) into tOpen
-                
+
                 if tOpen is 0 then exit repeat
                 if tNumChars <= tOpen then exit repeat
                 put tOpen + tPathOpen into tPathOpen
-                
+
                 if the char(tPathOpen - 1) of tSVG is not "<" and char (tPathOpen - 1)  of tSVG is not space then
                     put tPathOpen  + 3 into tPathOpen
                     next repeat
                 end if
-                
+
                 put offset("d=" & quote, tSVG, tPathOpen)  into tOpen
                 if tOpen is 0 then exit repeat
                 put tOpen + tPathOpen  + 3 into tOpen
-                
+
                 put offset(quote, tSVG, tOpen)  into tClose
                 if tClose is 0 then exit repeat
                 put tOpen + tClose into tClose
-                
+
                 put char tOpen to (tClose - 1) of tSVG into tNewPath
                 add 1 to tClose
                 put tClose into tPathOpen
-                
+
                 get (the item 1 to 2 of ( the char tClose to - 1 of tSVG))
-                
+
                 if the trueWord 1 of it is "fill" and the trueWord -1 of it is "none" then
                     next repeat
                 end if
-                
+
                 put tNewPath && cr after tSVGPath
-                
+
             end repeat
         end if
     else
-        
+
         put tSVG into tSVGPath
     end if
-    
+
     local tWidget, tOutPathSVG
-    
+
     create widget tName as "com.livecode.widget.svgpath"
     put it into tWidget
-    
+
     try
         set the iconPath of tWidget to tSVGPath
         put tSVGPath into tOutPathSVG
     end try
-    
+
     delete tWidget
-    
+
     return tOutPathSVG
 end _getPathSVG
 
