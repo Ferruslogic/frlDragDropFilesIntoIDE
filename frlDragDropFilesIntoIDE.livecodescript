@@ -25,7 +25,7 @@ This small library is to aid in the application creation process by
 allowing you to drag files into the development IDE. So it only runs
 in development mode for the time being.
 
-version 1.0.8
+version 1.0.9
 Made: 2020-07-09 15:20
 Last Update: 2021-04-04 08:33
 */
@@ -79,13 +79,13 @@ end extensionFinalize
 
 
 on dragEnter
-   if the tool is not "browse tool" and the dragData["files"] is not empty then _acceptDrop
+   if the tool is "pointer tool" and the dragData["files"] is not empty then _acceptDrop
    pass dragEnter
 end dragEnter
 
 
 on dragMove
-   if the tool is not "browse tool" and the dragData["files"] is not empty  then _acceptDrop
+   if the tool is "pointer tool" and the dragData["files"] is not empty  then _acceptDrop
    pass dragMove
 end dragMove
 
@@ -97,10 +97,11 @@ end dragLeave
 
 
 local sCtrlShift
+
 on dragDrop
 
    _deleteBackgroundGraphic
-   if the tool is "browse tool" or sFiles is empty then pass dragDrop
+   if the tool is no "pointer tool" or sFiles is empty then pass dragDrop
 
    _setDefaultStack
    if _ItIsIDEStack(sMouseStack) is true then
@@ -158,55 +159,56 @@ end suspendStack
 
 
 private command _acceptDrop
-
-   if the tool is "browse tool" then
-      _deleteBackgroundGraphic
-      unlock messages
-      exit _acceptDrop
-   end if
-
-   put the dragData["files"] into sFiles
-
-   _setDefaultStack
-
-   if _inMouseStack() and _filesTypeDragDrop(sFiles) is true and the cantModify of stack sMouseStack is not true then
-      set the dragAction to "copy"
-
-   else
-      set the dragAction to "none"
-      _deleteBackgroundGraphic
-      unlock messages
-      exit _acceptDrop
-   end if
-
-
-   if there is not graphic "frlDragDropBack" of this cd of stack sMouseStack then
-      lock messages
-
-      # I create this graph because the drag & drop message is not generated on the card
-      create invisible graphic "frlDragDropBack" in this cd
-      put it into sLongIdBackGraphic
-
-      set the rect of sLongIdBackGraphic to the rect of this cd of stack sMouseStack
-
-      try
-         set the opaque     of sLongIdBackGraphic to true
-         set the blendlevel of sLongIdBackGraphic to 100
-         set the layer      of sLongIdBackGraphic to bottom
-         set the lineSize   of sLongIdBackGraphic to 0
-         set the backColor  of sLongIdBackGraphic to revIDEColor("edition_color")
-         set the visible    of sLongIdBackGraphic to true
-      end try
-
-      put empty into sDragDestination
-      put empty into sTypeDragDestination
-      put empty into sOptionShift
-
-      if _ItIsIDEStack(sMouseStack) is true then set the blendlevel of sLongIdBackGraphic to 100
-      else set the blendlevel of sLongIdBackGraphic to 0
-      unlock messages
-   end if
-
+    
+    
+    if the tool is not "pointer tool" then
+        _deleteBackgroundGraphic
+        unlock messages
+        exit _acceptDrop
+    end if
+    
+    put the dragData["files"] into sFiles
+        
+    _setDefaultStack
+    
+    if _inMouseStack() and _filesTypeDragDrop(sFiles) is true and the cantModify of stack sMouseStack is not true then
+        set the dragAction to "copy"
+        
+    else
+        set the dragAction to "none"
+        _deleteBackgroundGraphic
+        unlock messages
+        exit _acceptDrop
+    end if
+    
+    
+    if there is not graphic "frlDragDropBack" of this cd of stack sMouseStack then
+        lock messages
+        
+        # I create this graph because the drag & drop message is not generated on the card
+        create invisible graphic "frlDragDropBack" in this cd
+        put it into sLongIdBackGraphic
+        
+        set the rect of sLongIdBackGraphic to the rect of this cd of stack sMouseStack
+        
+        try
+            set the opaque     of sLongIdBackGraphic to true
+            set the blendlevel of sLongIdBackGraphic to 100
+            set the layer      of sLongIdBackGraphic to bottom
+            set the lineSize   of sLongIdBackGraphic to 0
+            set the backColor  of sLongIdBackGraphic to revIDEColor("edition_color")
+            set the visible    of sLongIdBackGraphic to true
+        end try
+        
+        put empty into sDragDestination
+        put empty into sTypeDragDestination
+        put empty into sOptionShift
+        
+        if _ItIsIDEStack(sMouseStack) is true then set the blendlevel of sLongIdBackGraphic to 100
+        else set the blendlevel of sLongIdBackGraphic to 0
+        unlock messages
+    end if
+    
 end _acceptDrop
 
 
@@ -215,7 +217,6 @@ private command _importFile pFilePath
 
    set the itemdel to "."
 
-   breakpoint
 
    lock messages
    put _dragDestination() into sDragDestination
