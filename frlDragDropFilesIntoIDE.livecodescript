@@ -159,38 +159,38 @@ end suspendStack
 
 
 private command _acceptDrop
-    
-    
+
+
     if the tool is not "pointer tool" then
         _deleteBackgroundGraphic
         unlock messages
         exit _acceptDrop
     end if
-    
+
     put the dragData["files"] into sFiles
-        
+
     _setDefaultStack
-    
+
     if _inMouseStack() and _filesTypeDragDrop(sFiles) is true and the cantModify of stack sMouseStack is not true then
         set the dragAction to "copy"
-        
+
     else
         set the dragAction to "none"
         _deleteBackgroundGraphic
         unlock messages
         exit _acceptDrop
     end if
-    
-    
+
+
     if there is not graphic "frlDragDropBack" of this cd of stack sMouseStack then
         lock messages
-        
+
         # I create this graph because the drag & drop message is not generated on the card
         create invisible graphic "frlDragDropBack" in this cd
         put it into sLongIdBackGraphic
-        
+
         set the rect of sLongIdBackGraphic to the rect of this cd of stack sMouseStack
-        
+
         try
             set the opaque     of sLongIdBackGraphic to true
             set the blendlevel of sLongIdBackGraphic to 100
@@ -199,16 +199,16 @@ private command _acceptDrop
             set the backColor  of sLongIdBackGraphic to revIDEColor("edition_color")
             set the visible    of sLongIdBackGraphic to true
         end try
-        
+
         put empty into sDragDestination
         put empty into sTypeDragDestination
         put empty into sOptionShift
-        
+
         if _ItIsIDEStack(sMouseStack) is true then set the blendlevel of sLongIdBackGraphic to 100
         else set the blendlevel of sLongIdBackGraphic to 0
         unlock messages
     end if
-    
+
 end _acceptDrop
 
 
@@ -275,105 +275,105 @@ end _importFile
 
 private  command _importImage pPathOrData, pType
     local tNameFile, tImageData, tNewImage
-    
+
     set the itemdel to slash
-    
+
     _setDefaultStack
-    
+
     if _ItIsIDEStack(sMouseStack) is true then
         put the short name of the topStack into sMouseStack
         set the defaultstack to sMouseStack
     end if
-    
+
     if there is a stack sMouseStack and not _ItIsIDEStack(sMouseStack) then
-        
+
         if pType is "file" then
-            
+
             if there is a sDragDestination and sTypeDragDestination is "image" and sOptionShift is true  then
                 local tLockLoc
-                
+
                 put the lockLoc of sDragDestination into tLockLoc
                 set the lockLoc of sDragDestination to true
-                
+
                 if the filename of sDragDestination is empty then
                     set the text of sDragDestination to URL ("binfile:" & pPathOrData)
                 else
                     set the filename of sDragDestination to _convertPathToRelativePath(pPathOrData)
                 end if
-                
+
                 set the lockLoc of sDragDestination to tLockLoc
-                
+
                 put sDragDestination into sLastControl
-                
+
                 exit _importImage
             end if
-            
+
             if sCtrlShift is false then set the text of templateImage to URL ("binfile:" & pPathOrData)
-            
+
             put item - 1 of pPathOrData into tNameFile
-            
+
             create image tNameFile in this cd
             put it into tNewImage
-            
+
             if the text of tNewImage is empty then
                 set the filename of tNewImage to _convertPathToRelativePath(pPathOrData)
             end if
-            
+
             if there is tNewImage then
-                
+
                 _scaleImage tNewImage
-                
+
                 if sMouseLoc is within the rect of card 1 of stack sMouseStack then
                     set the loc of tNewImage to sMouseLoc
                 else
                     set the loc of tNewImage to (the loc of cd 1 of stack sMouseStack)
                 end if
-                
-                
+
+
                 put tNewImage into sLastControl
             end if
-            
+
             reset templateImage
-            
+
         else
             local tOldText, tNewText
             put drawingSvgCompileFile(pPathOrData) into tNewText
-            
+
             if tNewText is not empty then
-                
+
                 if there is a sDragDestination and sTypeDragDestination is "image" then
                     put the text of sDragDestination  into tOldText
-                    
+
                     set the text of sDragDestination to tNewText
                     _scaleImage tNewImage
-                    
+
                     if the text of sDragDestination is empty then
                         set the text of sDragDestination to tOldText
                     end if
-                    
+
                 else
                     put the mouseLoc into sMouseLoc
                     set the text of templateImage to tNewText
-                    
+
                     put item - 1 of pPathOrData into tNameFile
                     create image tNameFile in this cd
                     put it into tNewImage
-                    
-                    
+
+
                     if there is tNewImage then
                         _scaleImage tNewImage
-                        
+
                         if sMouseLoc is within the rect of card 1 of stack sMouseStack then
                             set the loc of tNewImage to sMouseLoc
-                            
+
                         else
                             set the loc of tNewImage to (the loc of cd 1 of stack sMouseStack)
-                            
+
                         end if
-                        
+
                         put tNewImage into sLastControl
                     end if
-                    
+
                     reset templateImage
                 end if
             else
@@ -381,7 +381,7 @@ private  command _importImage pPathOrData, pType
             end if
         end if
     end if
-    
+
 end _importImage
 
 
@@ -517,11 +517,41 @@ end _importTextPlan
 
 private command _installExtension pExtensionURL
     // get from local .lce file
-   send"installExtension pExtensionURL, , widget" to stack"revIDEExtensionManager" in 0.1 sec
+    local tKind
+
+    put _getKindExtensionFile( pExtensionURL ) into tKind
+
+    if tKind is empty then exit _installExtension
+    _setDefaultStack
+
+    if tKind is among the lines of the loadedExtensions then
+        dispatch "revIDEExtensionUninstall" to stack sMouseStack with tKind
+    end if
+
+    dispatch "revIDEExtensionInstall" to stack sMouseStack with pExtensionURL
 end _installExtension
 
 
-private command _setDefaultStack
+private function  _getKindExtensionFile pFilePath
+    try
+        local tItemData, tS, tE
+        revZipOpenArchive pFilePath, "read"
+        revZipExtractItemToVariable pFilePath, "manifest.xml", "tItemData"
+        revZipCloseArchive pFilePath
+
+        put offset ("<name>", tItemData,  0) into tS
+        put offset ("</name>", tItemData,  tS) into tE
+        if tS is not 0 and tE is not 0 then
+            return the char (tS + 6) to ( tS + tE - 1) of tItemData
+        end if
+    catch e
+        return empty
+    end try
+
+end _getKindExtensionFile
+
+
+    private command _setDefaultStack
    if there is a the mouseStack then put the short name of the mouseStack into sMouseStack
 
    if sOldMouseStack is not sMouseStack then
@@ -587,72 +617,72 @@ end _convertPathToRelativePath
 
 private function _getPathSVG pFilePath
     local tSVG, tPathOpen , tOpen = 0, tClose, tSVGPath, tNumChars, tNewPath, tName, tSvgColorToJPG = false
-    
+
     set the itemdel to slash
     put the last item of pFilePath into tName
-    
+
     set the itemdel to quote
-    
+
     if there is a file pFilePath then
-        
+
         put URL( "file:" & pFilePath ) into tSVG
-        
+
         put length(tSVG) into tNumChars
-        
+
         put "#" is in tSVG and not (the controlKey is down and the shiftKey is down)  into tSvgColorToJPG
-        
+
         if tSvgColorToJPG is false  and "path" is in tSVG then
             repeat for tNumChars
                 put offset("path", tSVG, tPathOpen) into tOpen
-                
+
                 if tOpen is 0 then exit repeat
                 if tNumChars <= tOpen then exit repeat
                 put tOpen + tPathOpen into tPathOpen
-                
+
                 if the char(tPathOpen - 1) of tSVG is not "<" and char (tPathOpen - 1)  of tSVG is not space then
                     put tPathOpen  + 3 into tPathOpen
                     next repeat
                 end if
-                
+
                 put offset("d=" & quote, tSVG, tPathOpen)  into tOpen
                 if tOpen is 0 then exit repeat
                 put tOpen + tPathOpen  + 3 into tOpen
-                
+
                 put offset(quote, tSVG, tOpen)  into tClose
                 if tClose is 0 then exit repeat
                 put tOpen + tClose into tClose
-                
+
                 put char tOpen to (tClose - 1) of tSVG into tNewPath
                 add 1 to tClose
                 put tClose into tPathOpen
-                
+
                 get (the item 1 to 2 of ( the char tClose to - 1 of tSVG))
-                
+
                 if the trueWord 1 of it is "fill" and the trueWord -1 of it is "none" then
                     next repeat
                 end if
-                
+
                 put tNewPath && cr after tSVGPath
-                
+
             end repeat
         end if
     else
-        
+
         put tSVG into tSVGPath
     end if
-    
+
     local tWidget, tOutPathSVG
-    
+
     create widget tName as "com.livecode.widget.svgpath"
     put it into tWidget
-    
+
     try
         set the iconPath of tWidget to tSVGPath
         put tSVGPath into tOutPathSVG
     end try
-    
+
     delete tWidget
-    
+
     return tOutPathSVG
 end _getPathSVG
 
