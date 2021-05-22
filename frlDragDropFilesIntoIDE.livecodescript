@@ -59,108 +59,114 @@ constant kTextPlan = "json,html,htm,txt,lng,locale,log,mnu,nfo,inf,ini,inc,bar,c
 constant kLiveCodeExtension = "lce"
 
 on extensionInitialize
-   if the target is not me then
-      pass extensionInitialize
-   end if
+    if the target is not me then
+        pass extensionInitialize
+    end if
 
-   if the environment is "development" then
-      insert the script of me into front
-      set the _ideoverride of me to true
-   end if
+    if the environment is "development" then
+        if $0 ends with ".lce" then
+            _installExtension $0
+        end if
+
+        insert the script of me into front
+        set the _ideoverride of me to true
+    end if
 end extensionInitialize
 
 on extensionFinalize
-   if the target is not me then
-      pass extensionFinalize
-   end if
+    if the target is not me then
+        pass extensionFinalize
+    end if
 
-   remove the script of me from front
+    remove the script of me from front
 end extensionFinalize
 
 
+
 on dragEnter
-   if the tool is "pointer tool" and the dragData["files"] is not empty then _acceptDrop
-   pass dragEnter
+    if the tool is "pointer tool" and the dragData["files"] is not empty then _acceptDrop
+    pass dragEnter
 end dragEnter
 
 
 on dragMove
-   if the tool is "pointer tool" and the dragData["files"] is not empty  then _acceptDrop
-   pass dragMove
+    if the tool is "pointer tool" and the dragData["files"] is not empty  then _acceptDrop
+    pass dragMove
 end dragMove
 
 
 on dragLeave
-   if there is not a stack sMouseStack or within(stack sMouseStack, globalLoc(the mouseLoc)) is false then _deleteBackgroundGraphic
-   pass dragLeave
+    if there is not a stack sMouseStack or within(stack sMouseStack, globalLoc(the mouseLoc)) is false then _deleteBackgroundGraphic
+    pass dragLeave
 end dragLeave
 
 
 local sCtrlShift
 
 on dragDrop
+    _deleteBackgroundGraphic
+    if the tool is no "pointer tool" or sFiles is empty then pass dragDrop
 
-   _deleteBackgroundGraphic
-   if the tool is no "pointer tool" or sFiles is empty then pass dragDrop
+    _setDefaultStack
+    if _ItIsIDEStack(sMouseStack) is true then
+        put the short name of the topStack into sMouseStack
+        set the defaultstack to sMouseStack
+    end if
 
-   _setDefaultStack
-   if _ItIsIDEStack(sMouseStack) is true then
-      put the short name of the topStack into sMouseStack
-      set the defaultstack to sMouseStack
-   end if
+    put the mouseLoc into sMouseLoc
 
-   put the mouseLoc into sMouseLoc
+    put the optionKey is down and the shiftKey is down and the number of lines of sFiles is 1  into sOptionShift
+    put the controlKey is down and the shiftKey is down into sCtrlShift
 
-   put the optionKey is down and the shiftKey is down and the number of lines of sFiles is 1  into sOptionShift
-   put the controlKey is down and the shiftKey is down into sCtrlShift
+    if sFiles is not empty then
+        lock screen; lock messages;lock cursor
 
-   if sFiles is not empty then
-      lock screen; lock messages;lock cursor
+        set the cursor to watch
 
-      set the cursor to watch
+        repeat for each line tFile in sFiles
+            _importFile tFile
+        end repeat
 
-      repeat for each line tFile in sFiles
-         _importFile tFile
-      end repeat
+        set the dragData to empty
+        set the clipboardData to empty
+        unlock messages
 
-      set the dragData to empty
-      set the clipboardData to empty
-      unlock messages
+        choose pointer tool
 
-      choose pointer tool
+        if there is a sLastControl then
+            focus on nothing
+            select empty
+            select sLastControl
+        end if
 
-      if there is a sLastControl then
-         focus on nothing
-         select empty
-         select sLastControl
-      end if
+        unlock screen; unlock messages; unlock cursor
+        exit dragDrop
+    end if
 
-      unlock screen; unlock messages; unlock cursor
-      exit dragDrop
-   end if
-
-   pass dragDrop
+    pass dragDrop
 end dragDrop
 
 # remove data being dragged.
 on dragEnd
-   _deleteBackgroundGraphic
-   pass dragEnd
+    _deleteBackgroundGraphic
+    pass dragEnd
 end dragEnd
 
 # remove data being dragged.
 on suspendStack
-   if sFiles is not empty then
-      _deleteBackgroundGraphic
-      delete variable sMouseStack
-   end if
-   pass suspendStack
+    if sFiles is not empty then
+        _deleteBackgroundGraphic
+        delete variable sMouseStack
+    end if
+    pass suspendStack
 end suspendStack
+
+private on ____________Core______________
+    -- Core of this extensions
+end ____________Core______________
 
 
 private command _acceptDrop
-
-
     if the tool is not "pointer tool" then
         _deleteBackgroundGraphic
         unlock messages
@@ -213,63 +219,63 @@ end _acceptDrop
 
 
 private command _importFile pFilePath
-   local tExtension
+    local tExtension
 
-   set the itemdel to "."
+    set the itemdel to "."
 
 
-   lock messages
-   put _dragDestination() into sDragDestination
+    lock messages
+    put _dragDestination() into sDragDestination
 
-   _deleteBackgroundGraphic
+    _deleteBackgroundGraphic
 
-   put word 1 of sDragDestination into sTypeDragDestination
-   put item - 1 of pFilePath into tExtension
+    put word 1 of sDragDestination into sTypeDragDestination
+    put item - 1 of pFilePath into tExtension
 
-   set the itemdel to comma
+    set the itemdel to comma
 
-   if there is a file pFilePath then
-      switch
+    if there is a file pFilePath then
+        switch
             # SVG
-         case tExtension is "svg"
-            _importPathSVG pFilePath
-            break
+            case tExtension is "svg"
+                _importPathSVG pFilePath
+                break
 
             # LiveCode, Revolution and MetaCard binary stack files
-         case tExtension is among the items of kBynaryStack
-            unlock messages
-            go to card 1 of stack pFilePath
-            break
+            case tExtension is among the items of kBynaryStack
+                unlock messages
+                go to card 1 of stack pFilePath
+                break
 
             # Script-only stack
-         case tExtension is kScriptOnlyStack
-            edit the script of stack pFilePath
-            break
+            case tExtension is kScriptOnlyStack
+                edit the script of stack pFilePath
+                break
 
             # Images file
-         case tExtension is among the items of kImage
-            _importImage pFilePath, "file"
-            break
+            case tExtension is among the items of kImage
+                _importImage pFilePath, "file"
+                break
 
             # Audio and Videos file
-         case tExtension is among the items of kAudio
-            _importPlayer pFilePath
-            break
+            case tExtension is among the items of kAudio
+                _importPlayer pFilePath
+                break
 
             # Text Plan
-         case tExtension is among the items of kTextPlan
-            _importTextPlan pFilePath
-            break
+            case tExtension is among the items of kTextPlan
+                _importTextPlan pFilePath
+                break
 
             # LiveCode Extension
-         case tExtension is kLiveCodeExtension
-            _installExtension pFilePath
-            break
+            case tExtension is kLiveCodeExtension
+                _installExtension pFilePath
+                break
 
-      end switch
+        end switch
 
-   end if
-   unlock messages
+    end if
+    unlock messages
 end _importFile
 
 
@@ -386,44 +392,44 @@ end _importImage
 
 
 private command _importPlayer pPathOrData
-   local tNameFile, tNumPlayer
-   set the itemdel to slash
+    local tNameFile, tNumPlayer
+    set the itemdel to slash
 
-   _setDefaultStack
+    _setDefaultStack
 
-   if _ItIsIDEStack(sMouseStack) is true then
-      put the short name of the topStack into sMouseStack
-      set the defaultstack to sMouseStack
-   end if
+    if _ItIsIDEStack(sMouseStack) is true then
+        put the short name of the topStack into sMouseStack
+        set the defaultstack to sMouseStack
+    end if
 
 
-   if there is a stack sMouseStack and not _ItIsIDEStack(sMouseStack) then
+    if there is a stack sMouseStack and not _ItIsIDEStack(sMouseStack) then
 
-      if there is a sDragDestination and sTypeDragDestination is "player" and sOptionShift is true then
+        if there is a sDragDestination and sTypeDragDestination is "player" and sOptionShift is true then
 
-         set the filename of sDragDestination to _convertPathToRelativePath(pPathOrData)
-         put sDragDestination into sLastControl
-      else
-         local tNewPlayer
+            set the filename of sDragDestination to _convertPathToRelativePath(pPathOrData)
+            put sDragDestination into sLastControl
+        else
+            local tNewPlayer
 
-         set the filename of templatePlayer to _convertPathToRelativePath(pPathOrData)
-         set the showController of templatePlayer to true
+            set the filename of templatePlayer to _convertPathToRelativePath(pPathOrData)
+            set the showController of templatePlayer to true
 
-         put item - 1 of pPathOrData into tNameFile
-         create player tNameFile in this cd
-         put it into tNewPlayer
+            put item - 1 of pPathOrData into tNameFile
+            create player tNameFile in this cd
+            put it into tNewPlayer
 
-         if sMouseLoc is within the rect of card 1 of stack sMouseStack then
-            set the loc of tNewPlayer to sMouseLoc
-         else
-            set the loc of tNewPlayer to (the loc of cd 1 of stack sMouseStack)
-         end if
+            if sMouseLoc is within the rect of card 1 of stack sMouseStack then
+                set the loc of tNewPlayer to sMouseLoc
+            else
+                set the loc of tNewPlayer to (the loc of cd 1 of stack sMouseStack)
+            end if
 
-         put tNewPlayer into sLastControl
-      end if
+            put tNewPlayer into sLastControl
+        end if
 
-      reset templatePlayer
-   end if
+        reset templatePlayer
+    end if
 
 end _importPlayer
 
@@ -522,13 +528,12 @@ private command _installExtension pExtensionURL
     put _getKindExtensionFile( pExtensionURL ) into tKind
 
     if tKind is empty then exit _installExtension
-    _setDefaultStack
 
     if tKind is among the lines of the loadedExtensions then
-        dispatch "revIDEExtensionUninstall" to stack sMouseStack with tKind
+        dispatch "revIDEExtensionUninstall" to stack "revExtensionBuilder" with tKind
     end if
 
-    dispatch "revIDEExtensionInstall" to stack sMouseStack with pExtensionURL
+    dispatch "revIDEExtensionInstall" to stack "revExtensionBuilder" with pExtensionURL
 end _installExtension
 
 
@@ -551,67 +556,67 @@ private function  _getKindExtensionFile pFilePath
 end _getKindExtensionFile
 
 
-    private command _setDefaultStack
-   if there is a the mouseStack then put the short name of the mouseStack into sMouseStack
+private command _setDefaultStack
+    if there is a the mouseStack then put the short name of the mouseStack into sMouseStack
 
-   if sOldMouseStack is not sMouseStack then
-      _deleteBackgroundGraphic
-   end if
+    if sOldMouseStack is not sMouseStack then
+        _deleteBackgroundGraphic
+    end if
 
-   put sMouseStack into sOldMouseStack
-   set the defaultStack to sMouseStack
+    put sMouseStack into sOldMouseStack
+    set the defaultStack to sMouseStack
 end _setDefaultStack
 
 
 private function _dragDestination
-   local tStack, tDragDestination
+    local tStack, tDragDestination
 
-   _setDefaultStack
+    _setDefaultStack
 
-   put the dragDestination into tDragDestination
+    put the dragDestination into tDragDestination
 
-   if there is an stack sMouseStack then
+    if there is an stack sMouseStack then
 
-      if there is  tDragDestination then
-         put the long id of tDragDestination into tDragDestination
+        if there is  tDragDestination then
+            put the long id of tDragDestination into tDragDestination
 
-         put ideStackOfObject(tDragDestination) into tStack
+            put ideStackOfObject(tDragDestination) into tStack
 
-         if there is a tDragDestination and tStack is the long name stack sMouseStack then
-            return tDragDestination
-         end if
+            if there is a tDragDestination and tStack is the long name stack sMouseStack then
+                return tDragDestination
+            end if
 
-      end if
+        end if
 
-      return the long id of this cd
-   end if
+        return the long id of this cd
+    end if
 end _dragDestination
 
 
 private command _deleteBackgroundGraphic
 
-   if sLongIdBackGraphic is not empty and there is sLongIdBackGraphic then
-      delete sLongIdBackGraphic
-      delete variable sLongIdBackGraphic
-   end if
+    if sLongIdBackGraphic is not empty and there is sLongIdBackGraphic then
+        delete sLongIdBackGraphic
+        delete variable sLongIdBackGraphic
+    end if
 
 end _deleteBackgroundGraphic
 
 
 private function _convertPathToRelativePath pPath
-   local tStackPath
+    local tStackPath
 
-   set the itemdel to slash
+    set the itemdel to slash
 
-   if there is not a stack sMouseStack then return pPath
+    if there is not a stack sMouseStack then return pPath
 
-   put item 1 to - 2 of the effective filename of stack sMouseStack into tStackPath
-   if there is not a folder tStackPath then return pPath
+    put item 1 to - 2 of the effective filename of stack sMouseStack into tStackPath
+    if there is not a folder tStackPath then return pPath
 
-   replace backslash with slash in pPath
-   replace tStackPath & slash with empty in pPath
+    replace backslash with slash in pPath
+    replace tStackPath & slash with empty in pPath
 
-   return pPath
+    return pPath
 end _convertPathToRelativePath
 
 
@@ -688,88 +693,88 @@ end _getPathSVG
 
 
 private function _filesTypeDragDrop pFiles
-   local tResult = true, tExtension
+    local tResult = true, tExtension
 
-   if pFiles is empty then return false
+    if pFiles is empty then return false
 
-   repeat for each line tFile in pFiles
+    repeat for each line tFile in pFiles
 
-      set the itemdel to "."
-      put item - 1 of tFile into tExtension
+        set the itemdel to "."
+        put item - 1 of tFile into tExtension
 
-      set the itemdel to comma
+        set the itemdel to comma
 
-      if tExtension is not among the items of (kBynaryStack,kScriptOnlyStack,kAudio,kImage,kTextPlan,kLiveCodeExtension) then
-         put false into tResult
-         exit repeat
-      end if
-   end repeat
+        if tExtension is not among the items of (kBynaryStack,kScriptOnlyStack,kAudio,kImage,kTextPlan,kLiveCodeExtension) then
+            put false into tResult
+            exit repeat
+        end if
+    end repeat
 
-   return tResult
+    return tResult
 end _filesTypeDragDrop
 
 
 private command _scaleImage pLongId
-   local tFormattedWidth, tFormattedHeight, tWidthCard, tHeightCard, tAspectRatio
+    local tFormattedWidth, tFormattedHeight, tWidthCard, tHeightCard, tAspectRatio
 
-   _setDefaultStack
+    _setDefaultStack
 
-   if _ItIsIDEStack(sMouseStack) is true then
-      put the short name of the topStack into sMouseStack
-      set the defaultstack to sMouseStack
-   end if
+    if _ItIsIDEStack(sMouseStack) is true then
+        put the short name of the topStack into sMouseStack
+        set the defaultstack to sMouseStack
+    end if
 
-   put the formattedWidth of pLongId into tFormattedWidth
-   put the formattedHeight of pLongId into tFormattedHeight
+    put the formattedWidth of pLongId into tFormattedWidth
+    put the formattedHeight of pLongId into tFormattedHeight
 
-   put the width of this card into tWidthCard
-   put the height of this card into tHeightCard
+    put the width of this card into tWidthCard
+    put the height of this card into tHeightCard
 
-   if tFormattedWidth is 0 or tFormattedHeight is 0 or (tFormattedWidth < tWidthCard and tFormattedHeight < tHeightCard) then
-      exit _scaleImage
-   end if
+    if tFormattedWidth is 0 or tFormattedHeight is 0 or (tFormattedWidth < tWidthCard and tFormattedHeight < tHeightCard) then
+        exit _scaleImage
+    end if
 
-   put min(tWidthCard/tFormattedWidth, tHeightCard/tFormattedHeight) into tAspectRatio
+    put min(tWidthCard/tFormattedWidth, tHeightCard/tFormattedHeight) into tAspectRatio
 
-   set the width of pLongId to tFormattedWidth * tAspectRatio
-   set the height of pLongId to tFormattedHeight * tAspectRatio
+    set the width of pLongId to tFormattedWidth * tAspectRatio
+    set the height of pLongId to tFormattedHeight * tAspectRatio
 end _scaleImage
 
 
 private function _ItIsIDEStack pNameStack
-   if there is not a stack pNameStack then return false
-   return the mainstack of stack pNameStack is not among the lines of ideUserMainStacks()
+    if there is not a stack pNameStack then return false
+    return the mainstack of stack pNameStack is not among the lines of ideUserMainStacks()
 end _ItIsIDEStack
 
 
 private command _cancelPendingMessages pMessageName
-   local tPendingMessages
+    local tPendingMessages
 
-   set the itemDelimiter to comma
-   put the pendingMessages into tPendingMessages
+    set the itemDelimiter to comma
+    put the pendingMessages into tPendingMessages
 
-   repeat for each line tMessage in tPendingMessages
-      if item 3 of tMessage is pMessageName then
-         cancel item 1 of tMessage
-      end if
-   end repeat
+    repeat for each line tMessage in tPendingMessages
+        if item 3 of tMessage is pMessageName then
+            cancel item 1 of tMessage
+        end if
+    end repeat
 end _cancelPendingMessages
 
 
 private function _inMouseStack
-   local tTarget, tStackOfControlLeave
+    local tTarget, tStackOfControlLeave
 
-   put the target into tTarget
-   if tTarget is empty then return false
+    put the target into tTarget
+    if tTarget is empty then return false
 
-   if word 1 of tTarget is in "card stack" then
-      put ideStackOfObject(  the long id of  tTarget) into tStackOfControlLeave
+    if word 1 of tTarget is in "card stack" then
+        put ideStackOfObject(  the long id of  tTarget) into tStackOfControlLeave
 
-      if there is a stack tStackOfControlLeave and globalLoc(the mouseLoc) is not within the rect of stack tStackOfControlLeave then
-         _deleteBackgroundGraphic
-         return false
-      end if
+        if there is a stack tStackOfControlLeave and globalLoc(the mouseLoc) is not within the rect of stack tStackOfControlLeave then
+            _deleteBackgroundGraphic
+            return false
+        end if
 
-   end if
-   return true
+    end if
+    return true
 end _inMouseStack
