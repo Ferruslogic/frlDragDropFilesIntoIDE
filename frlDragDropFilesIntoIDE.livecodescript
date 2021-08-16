@@ -1,4 +1,4 @@
-script "com.ferruslogic.library.dragDropFilesIntoIDE"
+﻿script "com.ferruslogic.library.dragDropFilesIntoIDE"
 /*
 Copyright (c) 2020 FerrusLogic
 
@@ -25,7 +25,7 @@ This small library is to aid in the application creation process by
 allowing you to drag files into the development IDE. So it only runs
 in development mode for the time being.
 
-version 1.0.9
+version 1.1.0
 Made: 2020-07-09 15:20
 Last Update: 2021-04-04 08:33
 */
@@ -83,7 +83,7 @@ end extensionFinalize
 
 
 
-on dragEnter    
+on dragEnter
     if the tool is "pointer tool" and the dragData["files"] is not empty then _acceptDrop
     pass dragEnter
 end dragEnter
@@ -106,49 +106,49 @@ local sCtrlShift
 on dragDrop
     _deleteBackgroundGraphic
     if the tool is no "pointer tool" or sFiles is empty then pass dragDrop
-    
+
     _setDefaultStack
     if _ItIsIDEStack(sMouseStack) is true then
         put the short name of the topStack into sMouseStack
         set the defaultstack to sMouseStack
     end if
-    
+
     put the mouseLoc into sMouseLoc
-    
+
     put the optionKey is down and the shiftKey is down and the number of lines of sFiles is 1  into sOptionShift
     put the controlKey is down and the shiftKey is down into sCtrlShift
-    
+
     if sFiles is not empty then
         lock messages;lock cursor
         lock the clipboard
-        
+
         set the cursor to watch
-        
+
         repeat for each line tFile in sFiles
             _importFile tFile
         end repeat
-        
+
         delete variable sFiles
         set the dragData["files"] to empty
         set the clipboardData to empty
         set the dragAction to "none"
         set the fullDragData to empty
-        
+
         unlock messages
-        
+
         choose pointer tool
-        
+
         if there is a sLastControl then
             focus on nothing
             select empty
             select sLastControl
         end if
-        
+
         unlock screen; unlock messages; unlock cursor
         unlock the clipboard
         exit dragDrop
     end if
-    
+
     pass dragDrop
 end dragDrop
 
@@ -601,13 +601,13 @@ end _dragDestination
 
 
 private command _deleteBackgroundGraphic
-    
+
     if sLongIdBackGraphic is not empty and there is sLongIdBackGraphic then
         delete sLongIdBackGraphic
         delete variable sLongIdBackGraphic
     end if
     set the dragAction to "none"
-    
+
 end _deleteBackgroundGraphic
 
 
