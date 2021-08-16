@@ -1,4 +1,4 @@
-﻿script "com.ferruslogic.library.dragDropFilesIntoIDE"
+script "com.ferruslogic.library.dragDropFilesIntoIDE"
 /*
 Copyright (c) 2020 FerrusLogic
 
@@ -83,7 +83,7 @@ end extensionFinalize
 
 
 
-on dragEnter
+on dragEnter    
     if the tool is "pointer tool" and the dragData["files"] is not empty then _acceptDrop
     pass dragEnter
 end dragEnter
@@ -106,43 +106,49 @@ local sCtrlShift
 on dragDrop
     _deleteBackgroundGraphic
     if the tool is no "pointer tool" or sFiles is empty then pass dragDrop
-
+    
     _setDefaultStack
     if _ItIsIDEStack(sMouseStack) is true then
         put the short name of the topStack into sMouseStack
         set the defaultstack to sMouseStack
     end if
-
+    
     put the mouseLoc into sMouseLoc
-
+    
     put the optionKey is down and the shiftKey is down and the number of lines of sFiles is 1  into sOptionShift
     put the controlKey is down and the shiftKey is down into sCtrlShift
-
+    
     if sFiles is not empty then
-        lock screen; lock messages;lock cursor
-
+        lock messages;lock cursor
+        lock the clipboard
+        
         set the cursor to watch
-
+        
         repeat for each line tFile in sFiles
             _importFile tFile
         end repeat
-
-        set the dragData to empty
+        
+        delete variable sFiles
+        set the dragData["files"] to empty
         set the clipboardData to empty
+        set the dragAction to "none"
+        set the fullDragData to empty
+        
         unlock messages
-
+        
         choose pointer tool
-
+        
         if there is a sLastControl then
             focus on nothing
             select empty
             select sLastControl
         end if
-
+        
         unlock screen; unlock messages; unlock cursor
+        unlock the clipboard
         exit dragDrop
     end if
-
+    
     pass dragDrop
 end dragDrop
 
@@ -151,6 +157,7 @@ on dragEnd
     _deleteBackgroundGraphic
     pass dragEnd
 end dragEnd
+
 
 # remove data being dragged.
 on suspendStack
@@ -594,12 +601,13 @@ end _dragDestination
 
 
 private command _deleteBackgroundGraphic
-
+    
     if sLongIdBackGraphic is not empty and there is sLongIdBackGraphic then
         delete sLongIdBackGraphic
         delete variable sLongIdBackGraphic
     end if
-
+    set the dragAction to "none"
+    
 end _deleteBackgroundGraphic
 
 
