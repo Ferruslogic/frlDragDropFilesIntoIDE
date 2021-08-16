@@ -1,4 +1,4 @@
-﻿script "com.ferruslogic.library.dragDropFilesIntoIDE"
+script "com.ferruslogic.plugin.dragDropFilesIntoIDE"
 /*
 Copyright (c) 2020 FerrusLogic
 

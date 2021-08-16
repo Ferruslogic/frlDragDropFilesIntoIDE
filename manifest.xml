@@ -1,0 +1,8 @@
+<package version="0.0">
+  <name>com.ferruslogic.plugin.dragDropFilesIntoIDE</name>
+  <title>Drag Drop Files into IDE</title>
+  <author>FerrusLogic</author>
+  <version>1.0.9</version>
+  <type>plugin</type>
+  <license>community</license>
+ </package>
