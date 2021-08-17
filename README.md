@@ -2,6 +2,8 @@
 
 This plugin allows you to drag image, video, SVG and plain text files and import them into any of the LiveCode IDE's open windows.
 
+[<img src="images/DragDrog-LCIDE-Post.jpg" style="zoom:50%;" />](https://www.youtube.com/embed/onHGRuZKKto)
+
 
 ### LEEME en español [(aquí)](LEEME.md)
 
