@@ -1,4 +1,4 @@
-# Código de conducta del pacto de contribuyentes
+# Código de conducta del pacto de lo contribuyentes
 
 ## Nuestro compromiso
 
