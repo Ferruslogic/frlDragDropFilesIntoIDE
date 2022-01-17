@@ -168,6 +168,16 @@ on suspendStack
     pass suspendStack
 end suspendStack
 
+# remove data being dragged.
+on resumeStack
+    if sFiles is not empty then
+        _deleteBackgroundGraphic
+        delete variable sMouseStack
+    end if
+    pass suspendStack
+end resumeStack
+
+
 private on ____________Core______________
     -- Core of this extensions
 end ____________Core______________
