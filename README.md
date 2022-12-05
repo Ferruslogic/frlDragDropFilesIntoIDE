@@ -21,7 +21,7 @@ frlDragDropFilesIntoIDE is distributed under the [MIT license](LICENSE).
 
 
 
-## Current version: 1.1.0
+## Current version: 1.1.1
 
 
 
