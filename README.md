@@ -11,7 +11,7 @@ This plugin allows you to drag image, video, SVG and plain text files and import
 
 ## Author:
 
-Developed by [FerrusLogic](https://ferruslogic.com)
+Developed by FerrusLogic
 
 
 
